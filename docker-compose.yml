@@ -1,0 +1,52 @@
+version: '3'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_dockerizing
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: reduka
+      MYSQL_USER: reduka
+      MYSQL_PASSWORD: reduka123
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dbshell:/docker-entrypoint-initdb.d/
+    networks:
+      - fullstack
+
+  redis:
+    image: redis:alpine
+    container_name: redis_dockerizing
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - fullstack
+
+  api:
+    container_name: api_dockerizing
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/app
+    command: sh -c "air"
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - fullstack
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  fullstack:
+    driver: bridge

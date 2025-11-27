@@ -1,0 +1,19 @@
+FROM golang:1.25-alpine
+
+WORKDIR /app
+
+RUN go install github.com/air-verse/air@latest
+# Copy all files in local machine into host
+COPY . .
+
+
+# Copy .env (pastikan .dockerignore tidak mengabaikannya)
+COPY .env .env
+
+
+# Running `go mod download` for installing some dependencies (if any dependencies there)
+RUN go mod download
+
+# Running `go build main.go` for building the app into binary file
+# The binary file will be stored in `/app` directory
+RUN go build main.go
