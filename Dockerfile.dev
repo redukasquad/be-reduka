@@ -10,4 +10,4 @@ COPY .env .env
 
 RUN go mod download
 
-RUN go build main.go
+RUN go build -o /tmp/main cmd/api/main.go

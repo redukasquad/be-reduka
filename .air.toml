@@ -6,7 +6,7 @@ tmp_dir = "tmp"
 
 [build]
 bin = "./tmp/main" # Output binary location
-cmd = "go build -o ./tmp/main ./main.go" # Build command pointing to your main.go
+cmd = "go build -o ./tmp/main ./cmd/api/main.go" # Build command pointing to your main.go
 delay = 500 # Delay in milliseconds after each change
 exclude_dir = ["assets", "tmp", "vendor", "node_modules"] # Directories to exclude
 exclude_file = [] # Files to exclude
