@@ -1,0 +1,48 @@
+package users
+
+import (
+	"github.com/redukasquad/be-reduka/database/entities"
+	"gorm.io/gorm"
+)
+
+type Repository interface {
+	FindByID(id int) (entities.User, error)
+	FindByEmail(email string) (entities.User, error)
+	FindByVerificationCode(code string) (entities.User, error)
+	Create(user entities.User) error
+	Update(user entities.User) error
+}
+
+type repository struct {
+	db *gorm.DB
+}
+
+func NewRepository(db *gorm.DB) Repository {
+	return &repository{db: db}
+}
+
+func (r *repository) FindByID(id int) (entities.User, error) {
+	var user entities.User
+	err := r.db.First(&user, id).Error
+	return user, err
+}
+
+func (r *repository) FindByEmail(email string) (entities.User, error) {
+	var user entities.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+	return user, err
+}
+
+func (r *repository) Create(user entities.User) error {
+	return r.db.Create(&user).Error
+}
+
+func (r *repository) FindByVerificationCode(code string) (entities.User, error) {
+	var user entities.User
+	err := r.db.Where("verification_code = ?", code).First(&user).Error
+	return user, err
+}
+
+func (r *repository) Update(user entities.User) error {
+	return r.db.Save(&user).Error
+}
