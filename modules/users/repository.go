@@ -9,6 +9,7 @@ type Repository interface {
 	FindByID(id int) (entities.User, error)
 	FindByEmail(email string) (entities.User, error)
 	FindByVerificationCode(code string) (entities.User, error)
+	FindByResetToken(token string) (entities.User, error)
 	Create(user entities.User) error
 	Update(user entities.User) error
 }
@@ -45,4 +46,10 @@ func (r *repository) FindByVerificationCode(code string) (entities.User, error) 
 
 func (r *repository) Update(user entities.User) error {
 	return r.db.Save(&user).Error
+}
+
+func (r *repository) FindByResetToken(token string) (entities.User, error) {
+	var user entities.User
+	err := r.db.Where("reset_password_token = ?", token).First(&user).Error
+	return user, err
 }

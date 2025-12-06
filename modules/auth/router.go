@@ -15,4 +15,6 @@ func AuthRouter(router *gin.RouterGroup) {
 	router.POST("/login", authHandler.Login)
 	router.GET("/verify-email", authHandler.VerifyEmail)
 	router.POST("/logout", authHandler.Logout)
+	router.POST("/forgot-password", authHandler.ForgotPassword)
+	router.POST("/reset-password", authHandler.ResetPassword)
 }

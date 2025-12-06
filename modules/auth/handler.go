@@ -67,3 +67,35 @@ func (h *Handler) VerifyEmail(c *gin.Context) {
 func (h *Handler) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Logout Success", nil))
 }
+
+func (h *Handler) ForgotPassword(c *gin.Context) {
+	var input dto.ForgotPasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Request Failed", err.Error(), nil))
+		return
+	}
+
+	err := h.service.ForgotPassword(input)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Request Failed", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Reset Password Code Sent", nil))
+}
+
+func (h *Handler) ResetPassword(c *gin.Context) {
+	var input dto.ResetPasswordInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Reset Failed", err.Error(), nil))
+		return
+	}
+
+	err := h.service.ResetPassword(input)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Reset Failed", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Password Reset Successfully", nil))
+}

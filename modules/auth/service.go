@@ -17,6 +17,8 @@ type Service interface {
 	Register(input dto.RegisterInput) (entities.User, error)
 	Login(input dto.LoginInput) (string, error)
 	VerifyEmail(code string) error
+	ForgotPassword(input dto.ForgotPasswordInput) error
+	ResetPassword(input dto.ResetPasswordInput) error
 }
 
 type authService struct {
@@ -108,4 +110,51 @@ func generateToken(userID int) (string, error) {
 	}
 
 	return signedToken, nil
+}
+
+func (s *authService) ForgotPassword(input dto.ForgotPasswordInput) error {
+	user, err := s.repo.FindByEmail(input.Email)
+	if err != nil {
+		return errors.New("email not found")
+	}
+
+	token := utils.GenerateVerificationCode()
+	user.ResetPasswordToken = token
+	expiry := time.Now().Add(15 * time.Minute)
+	user.ResetPasswordTokenExpiry = &expiry
+
+	if err := s.repo.Update(user); err != nil {
+		return err
+	}
+
+	emailBody := "Your reset password code is: " + token
+	go utils.SendEmail(user.Email, "Reset Password", emailBody)
+
+	return nil
+}
+
+func (s *authService) ResetPassword(input dto.ResetPasswordInput) error {
+	if input.NewPassword != input.ConfirmPassword {
+		return errors.New("passwords do not match")
+	}
+
+	user, err := s.repo.FindByResetToken(input.Token)
+	if err != nil {
+		return errors.New("invalid token")
+	}
+
+	if user.ResetPasswordTokenExpiry == nil || user.ResetPasswordTokenExpiry.Before(time.Now()) {
+		return errors.New("token expired")
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(passwordHash)
+	user.ResetPasswordToken = ""
+	user.ResetPasswordTokenExpiry = nil
+
+	return s.repo.Update(user)
 }
