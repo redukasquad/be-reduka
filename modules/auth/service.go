@@ -29,10 +29,13 @@ func NewService(repo users.Repository) Service {
 
 func (s *authService) Register(input dto.RegisterInput) (entities.User, error) {
 	user := entities.User{
-		Username:   input.Username,
-		Email:      input.Email,
-		Role:       input.Role,
-		IsVerified: false,
+		Username:     input.Username,
+		Email:        input.Email,
+		Role:         input.Role,
+		NoTelp:       input.NoTelp,
+		JenisKelamin: input.JenisKelamin,
+		Kelas:        input.Kelas,
+		IsVerified:   false,
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)

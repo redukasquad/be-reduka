@@ -6,7 +6,7 @@ import (
 	"github.com/redukasquad/be-reduka/modules/users"
 )
 
-func Initiate(router *gin.RouterGroup) {
+func AuthRouter(router *gin.RouterGroup) {
 	userRepo := users.NewRepository(migrations.GetDB())
 	authService := NewService(userRepo)
 	authHandler := NewHandler(authService)

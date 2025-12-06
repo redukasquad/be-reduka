@@ -20,8 +20,9 @@ func main() {
 	r := gin.Default()
 
 	api := r.Group("/api")
+	v1 := api.Group("/v1")
 	{
-		auth.Initiate(api)
+		auth.AuthRouter(v1)
 	}
 
 	port := os.Getenv("PORT")
