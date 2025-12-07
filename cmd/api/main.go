@@ -25,9 +25,9 @@ func main() {
 		auth.AuthRouter(v1)
 	}
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("GOLANG_PORT")
 	if port == "" {
-		port = "8080"
+		port = "8888"
 	}
 
 	log.Printf("Server starting on port %s", port)

@@ -10,7 +10,7 @@ type Repository interface {
 	FindByEmail(email string) (entities.User, error)
 	FindByVerificationCode(code string) (entities.User, error)
 	FindByResetToken(token string) (entities.User, error)
-	Create(user entities.User) error
+	Create(user *entities.User) error
 	Update(user entities.User) error
 }
 
@@ -34,8 +34,8 @@ func (r *repository) FindByEmail(email string) (entities.User, error) {
 	return user, err
 }
 
-func (r *repository) Create(user entities.User) error {
-	return r.db.Create(&user).Error
+func (r *repository) Create(user *entities.User) error {
+	return r.db.Create(user).Error
 }
 
 func (r *repository) FindByVerificationCode(code string) (entities.User, error) {

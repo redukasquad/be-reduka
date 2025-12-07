@@ -11,12 +11,16 @@ import (
 	"github.com/redukasquad/be-reduka/packages/dto"
 	"github.com/redukasquad/be-reduka/packages/utils"
 	"golang.org/x/crypto/bcrypt"
+	"google.golang.org/api/oauth2/v2"
+	"gorm.io/gorm"
 )
 
 type Service interface {
 	Register(input dto.RegisterInput) (entities.User, error)
 	Login(input dto.LoginInput) (string, error)
 	VerifyEmail(code string) error
+	Me(user_id int) (*entities.User, error)
+	LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error)
 	ForgotPassword(input dto.ForgotPasswordInput) error
 	ResetPassword(input dto.ResetPasswordInput) error
 }
@@ -52,7 +56,7 @@ func (s *authService) Register(input dto.RegisterInput) (entities.User, error) {
 	code := utils.GenerateVerificationCode()
 	user.VerificationCode = code
 
-	err = s.repo.Create(user)
+	err = s.repo.Create(&user)
 	if err != nil {
 		return user, err
 	}
@@ -157,4 +161,41 @@ func (s *authService) ResetPassword(input dto.ResetPasswordInput) error {
 	user.ResetPasswordTokenExpiry = nil
 
 	return s.repo.Update(user)
+}
+
+func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error) {
+	user, err := s.repo.FindByEmail(googleUserInfo.Email)
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		newUser := &entities.User{
+			Username:   googleUserInfo.Name,
+			Email:      googleUserInfo.Email,
+			Password:   "",
+			IsVerified: true,
+			Kelas:      "Kelas 12",
+			Role:       "Students",
+		}
+		if err := s.repo.Create(newUser); err != nil {
+			return nil, "", err
+		}
+		user = *newUser
+	} else if err != nil {
+		return nil, "", err
+	}
+
+	token, err := generateToken(int(user.ID))
+	if err != nil {
+		return nil, "", err
+	}
+
+	return &user, token, nil
+}
+
+func (s *authService) Me(user_id int) (*entities.User, error) {
+	user, err := s.repo.FindByID(user_id)
+	if err != nil {
+		return nil, err
+	}
+
+	user.Password = ""
+	return &user, nil
 }
