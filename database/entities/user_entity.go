@@ -8,20 +8,30 @@ import (
 
 type User struct {
 	gorm.Model
-	Username                 string     `binding:"required"`
-	Email                    string     `binding:"required,email" gorm:"uniqueIndex;type:varchar(191)"`
-	Password                 string     `binding:"required"`
-	NoTelp                   string     
-	JenisKelamin             bool       
-	Kelas                    string     `binding:"required,oneof='Kelas 10' 'Kelas 11' 'Kelas 12' 'Gapyer (Alumni)'" gorm:"type:enum('Kelas 10','Kelas 11','Kelas 12','Gapyer (Alumni)')"`
-	Role                     string     `binding:"required,oneof=Students Tutor Admin" gorm:"type:enum('Students','Tutor','Admin')"`
-	ProfileImage             string   
-	IsVerified               bool       `gorm:"default:false"`
-	VerificationCode         string     `gorm:"omitempty"`
-	ResetPasswordToken       string     `gorm:"index"`
-	ResetPasswordTokenExpiry *time.Time 
+
+	Username     string `json:"username" form:"username" binding:"required"`
+	Email        string `json:"email" form:"email" binding:"required,email" gorm:"uniqueIndex;type:varchar(191)"`
+	Password     string `json:"password" form:"password" binding:"required"`
+	NoTelp       string `json:"noTelp" form:"noTelp"`
+	JenisKelamin bool   `json:"jenisKelamin" form:"jenisKelamin"`
+
+	Kelas string `json:"kelas" form:"kelas"
+		binding:"required,oneof='Kelas 10' 'Kelas 11' 'Kelas 12' 'Gapyer (Alumni)'"
+		gorm:"type:enum('Kelas 10','Kelas 11','Kelas 12','Gapyer (Alumni)')"`
+
+	Role string `json:"role" form:"role"
+		binding:"required,oneof=Students Tutor Admin"
+		gorm:"type:enum('Students','Tutor','Admin')"`
+
+	ProfileImage string `json:"profileImage" form:"profileImage"`
+
+	IsVerified               bool       `json:"isVerified" gorm:"default:false"`
+	VerificationCode         string     `json:"verificationCode,omitempty"`
+	ResetPasswordToken       string     `json:"resetPasswordToken" gorm:"index"`
+	ResetPasswordTokenExpiry *time.Time `json:"resetPasswordTokenExpiry"`
 
 	// relations
-	CourseRegistrations []CourseRegistration 
-	UserTargets         []UserTarget
+	CourseRegistrations []CourseRegistration `json:"courseRegistrations,omitempty"`
+	UserTargets         []UserTarget         `json:"userTargets,omitempty"`
 }
+

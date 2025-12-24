@@ -8,17 +8,18 @@ import (
 
 type ClassLesson struct {
 	gorm.Model
-	SubjectID       uint
-	CreatedByUserID uint
 
-	Title       string
-	Description string
-	LessonOrder int
+	SubjectID       uint `json:"subjectId" form:"subjectId" binding:"required"`
+	CreatedByUserID uint `json:"createdByUserId" form:"createdByUserId" binding:"required"`
 
-	StartTime *time.Time
-	EndTime   *time.Time
+	Title       string `json:"title" form:"title" binding:"required"`
+	Description string `json:"description" form:"description"`
+	LessonOrder int    `json:"lessonOrder" form:"lessonOrder" binding:"required,min=1"`
 
-	Subject ClassSubject `gorm:"foreignKey:SubjectID"`
-	Creator User `gorm:"foreignKey:CreatedByUserID"`
-	Resources []ClassLessonResource `gorm:"foreignKey:ClassLessonID"`
+	StartTime *time.Time `json:"startTime,omitempty" form:"startTime"`
+	EndTime   *time.Time `json:"endTime,omitempty" form:"endTime"`
+
+	Subject   ClassSubject          `json:"subject,omitempty" gorm:"foreignKey:SubjectID"`
+	Creator   User                  `json:"creator,omitempty" gorm:"foreignKey:CreatedByUserID"`
+	Resources []ClassLessonResource `json:"resources,omitempty" gorm:"foreignKey:ClassLessonID"`
 }

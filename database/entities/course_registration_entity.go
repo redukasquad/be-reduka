@@ -2,16 +2,19 @@ package entities
 
 import "gorm.io/gorm"
 
-
 type CourseRegistration struct {
 	gorm.Model
-	UserID   uint
-	CourseID uint
 
-	Status string
+	UserID   uint `json:"userId" form:"userId" binding:"required"`
+	CourseID uint `json:"courseId" form:"courseId" binding:"required"`
 
-	User   User
-	Course Course
+	Status string `json:"status" form:"status"
+		binding:"required,oneof=pending approved rejected"
+		gorm:"type:enum('pending','approved','rejected');default:'pending'"`
 
-	Answers []RegistrationAnswer `gorm:"foreignKey:RegistrationID"`
+	// relations
+	User   User   `json:"user,omitempty"`
+	Course Course `json:"course,omitempty"`
+
+	Answers []RegistrationAnswer `json:"answers,omitempty" gorm:"foreignKey:RegistrationID"`
 }

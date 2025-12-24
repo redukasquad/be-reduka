@@ -4,11 +4,12 @@ import "gorm.io/gorm"
 
 type RegistrationAnswer struct {
 	gorm.Model
-	RegistrationID uint
-	QuestionID     uint
 
-	AnswerText string
+	RegistrationID uint   `json:"registrationId" form:"registrationId" binding:"required"`
+	QuestionID     uint   `json:"questionId" form:"questionId" binding:"required"`
+	AnswerText     string `json:"answerText" form:"answerText" binding:"required"`
 
-	Registration CourseRegistration `gorm:"foreignKey:RegistrationID"`
-	Question     RegistrationQuestion `gorm:"foreignKey:QuestionID"`
+	// relations
+	Registration CourseRegistration   `json:"registration,omitempty" gorm:"foreignKey:RegistrationID"`
+	Question     RegistrationQuestion `json:"question,omitempty" gorm:"foreignKey:QuestionID"`
 }

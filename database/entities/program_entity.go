@@ -4,9 +4,11 @@ import "gorm.io/gorm"
 
 type Program struct {
 	gorm.Model
-	ProgramName string `gorm:"type:varchar(100);uniqueIndex"`
-	Description string `gorm:"type:text"`
-	ImageProgram string `gorm:"type:text"`
 
-	Courses []Course
+	ProgramName  string `json:"programName" form:"programName" binding:"required" gorm:"type:varchar(100);uniqueIndex"`
+	Description  string `json:"description" form:"description"`
+	ImageProgram string `json:"imageProgram" form:"imageProgram"`
+
+	// relations
+	Courses []Course `json:"courses,omitempty"`
 }
