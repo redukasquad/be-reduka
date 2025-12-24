@@ -31,7 +31,33 @@ func ConnectDatabase() {
 	log.Println("Database connected successfully!")
 
 	log.Println("Running auto-migrations...")
-	err = DB.AutoMigrate(&entities.User{})
+
+
+	log.Println("🚀 Running auto-migrations...")
+	err = DB.AutoMigrate(
+		// ===== USER & AUTH =====
+		&entities.User{},
+
+		// ===== PROGRAM & COURSE =====
+		&entities.Program{},
+		&entities.Course{},
+		&entities.CourseRegistration{},
+		&entities.RegistrationQuestion{},
+		&entities.RegistrationAnswer{},
+
+		// ===== CLASS & LESSON =====
+		&entities.ClassSubject{},
+		&entities.ClassLesson{},
+
+		// ===== TRYOUT =====
+		// nyusul
+		
+		// ===== UNIVERSITY & TARGET =====
+		&entities.University{},
+		&entities.UniversityProgram{},
+		&entities.UserTarget{},
+	)
+
 	if err != nil {
 		log.Fatalf("Failed to run auto-migrations: %v", err)
 	}

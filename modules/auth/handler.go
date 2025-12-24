@@ -10,8 +10,6 @@ import (
 	"golang.org/x/oauth2/google"
 	googleOAuth2 "google.golang.org/api/oauth2/v2"
 	"google.golang.org/api/option"
-
-	"github.com/redukasquad/be-reduka/packages/dto"
 	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
@@ -24,7 +22,7 @@ func NewHandler(service Service) *Handler {
 }
 
 func (h *Handler) RegisterHandler(c *gin.Context) {
-	var input dto.RegisterInput
+	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Register Failed", err.Error(), nil))
 		return
@@ -40,7 +38,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 }
 
 func (h *Handler) LoginHandler(c *gin.Context) {
-	var input dto.LoginInput
+	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Login Failed", err.Error(), nil))
 		return
@@ -76,7 +74,7 @@ func (h *Handler) LogoutHandler(c *gin.Context) {
 }
 
 func (h *Handler) ForgotPasswordHandler(c *gin.Context) {
-	var input dto.ForgotPasswordInput
+	var input ForgotPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Request Failed", err.Error(), nil))
 		return
@@ -92,7 +90,7 @@ func (h *Handler) ForgotPasswordHandler(c *gin.Context) {
 }
 
 func (h *Handler) ResetPasswordHandler(c *gin.Context) {
-	var input dto.ResetPasswordInput
+	var input ResetPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Reset Failed", err.Error(), nil))
 		return

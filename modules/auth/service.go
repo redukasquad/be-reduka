@@ -7,8 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redukasquad/be-reduka/database/entities"
-	"github.com/redukasquad/be-reduka/modules/users"
-	"github.com/redukasquad/be-reduka/packages/dto"
+	"github.com/redukasquad/be-reduka/modules/users"	
 	"github.com/redukasquad/be-reduka/packages/utils"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/api/oauth2/v2"
@@ -16,13 +15,13 @@ import (
 )
 
 type Service interface {
-	Register(input dto.RegisterInput) (entities.User, error)
-	Login(input dto.LoginInput) (string, error)
+	Register(input RegisterInput) (entities.User, error)
+	Login(input LoginInput) (string, error)
 	VerifyEmail(code string) error
 	Me(user_id int) (*entities.User, error)
 	LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error)
-	ForgotPassword(input dto.ForgotPasswordInput) error
-	ResetPassword(input dto.ResetPasswordInput) error
+	ForgotPassword(input ForgotPasswordInput) error
+	ResetPassword(input ResetPasswordInput) error
 }
 
 type authService struct {
@@ -33,7 +32,7 @@ func NewService(repo users.Repository) Service {
 	return &authService{repo: repo}
 }
 
-func (s *authService) Register(input dto.RegisterInput) (entities.User, error) {
+func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	user := entities.User{
 		Username:     input.Username,
 		Email:        input.Email,
@@ -83,7 +82,7 @@ func (s *authService) VerifyEmail(code string) error {
 	return s.repo.Update(user)
 }
 
-func (s *authService) Login(input dto.LoginInput) (string, error) {
+func (s *authService) Login(input LoginInput) (string, error) {
 	email := input.Email
 	password := input.Password
 
@@ -116,7 +115,7 @@ func generateToken(userID int) (string, error) {
 	return signedToken, nil
 }
 
-func (s *authService) ForgotPassword(input dto.ForgotPasswordInput) error {
+func (s *authService) ForgotPassword(input ForgotPasswordInput) error {
 	user, err := s.repo.FindByEmail(input.Email)
 	if err != nil {
 		return errors.New("email not found")
@@ -137,7 +136,7 @@ func (s *authService) ForgotPassword(input dto.ForgotPasswordInput) error {
 	return nil
 }
 
-func (s *authService) ResetPassword(input dto.ResetPasswordInput) error {
+func (s *authService) ResetPassword(input ResetPasswordInput) error {
 	if input.NewPassword != input.ConfirmPassword {
 		return errors.New("passwords do not match")
 	}
