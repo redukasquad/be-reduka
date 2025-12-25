@@ -1,6 +1,9 @@
 package utils
 
-import "strconv"
+import (
+	"strconv"
+	"time"
+)
 
 type Response struct {
 	Status  bool   `json:"status"`
@@ -37,4 +40,35 @@ func StringToInt(str string) (int, error) {
 		return 0, err
 	}
 	return int(result), nil
+}
+
+
+type Meta struct {
+	Timestamp string `json:"timestamp"`
+	Version   string `json:"version"`
+	RequestID string `json:"request_id,omitempty"`
+	Page      *int   `json:"page,omitempty"`
+	Limit     *int   `json:"limit,omitempty"`
+	Total     *int64 `json:"total,omitempty"`
+}
+
+func DefaultMeta() Meta {
+	return Meta{
+		Timestamp: time.Now().Format(time.RFC3339),
+		Version:   "v1",
+	}
+}
+
+func BuildResponseSuccessWithMeta(
+	message string,
+	data any,
+	meta Meta,
+) Response {
+	res := Response{
+		Status:  true,
+		Message: message,
+		Data:    data,
+		Meta:    meta,
+	}
+	return res
 }
