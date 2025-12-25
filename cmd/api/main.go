@@ -8,9 +8,11 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/redukasquad/be-reduka/database/migrations"
 	"github.com/redukasquad/be-reduka/modules/auth"
+	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
 func main() {
+	utils.InitLogger()
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
