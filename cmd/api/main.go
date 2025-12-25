@@ -12,10 +12,12 @@ import (
 	"github.com/redukasquad/be-reduka/middleware"
 	"github.com/redukasquad/be-reduka/modules/auth"
 	"github.com/redukasquad/be-reduka/modules/users"
+	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
 func main() {
-	if err := godotenv.Load("../../.env"); err != nil {
+	utils.InitLogger()
+	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
 
