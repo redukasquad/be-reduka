@@ -14,15 +14,27 @@ import (
 )
 
 
-type Handler struct {
+type handler struct {
 	service Service
 }
 
-func NewHandler(service Service) *Handler {
-	return &Handler{service: service}
+type Handler interface {
+	RegisterHandler(c *gin.Context)
+	LoginHandler(c *gin.Context)
+	VerifyEmailHandler(c *gin.Context)
+	LogoutHandler(c *gin.Context)
+	ForgotPasswordHandler(c *gin.Context)
+	ResetPasswordHandler(c *gin.Context)
+	GoogleLoginHandler(c *gin.Context)
+	GoogleCallbackHandler(c *gin.Context)
+	MeHandler(c *gin.Context)
 }
 
-func (h *Handler) RegisterHandler(c *gin.Context) {
+func NewHandler(service Service) Handler {
+	return &handler{service: service}
+}
+
+func (h *handler) RegisterHandler(c *gin.Context) {
 	var input RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Register Failed", err.Error(), nil))
@@ -38,7 +50,7 @@ func (h *Handler) RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("User Registered", user))
 }
 
-func (h *Handler) LoginHandler(c *gin.Context) {
+func (h *handler) LoginHandler(c *gin.Context) {
 	var input LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Login Failed", err.Error(), nil))
@@ -54,7 +66,7 @@ func (h *Handler) LoginHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Login Success", gin.H{"token": token}))
 }
 
-func (h *Handler) VerifyEmailHandler(c *gin.Context) {
+func (h *handler) VerifyEmailHandler(c *gin.Context) {
 	code := c.Query("code")
 	if code == "" {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Verification Failed", "Code is required", nil))
@@ -70,11 +82,11 @@ func (h *Handler) VerifyEmailHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Email Verified Successfully", nil))
 }
 
-func (h *Handler) LogoutHandler(c *gin.Context) {
+func (h *handler) LogoutHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Logout Success", nil))
 }
 
-func (h *Handler) ForgotPasswordHandler(c *gin.Context) {
+func (h *handler) ForgotPasswordHandler(c *gin.Context) {
 	var input ForgotPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Request Failed", err.Error(), nil))
@@ -90,7 +102,7 @@ func (h *Handler) ForgotPasswordHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Reset Password Code Sent", nil))
 }
 
-func (h *Handler) ResetPasswordHandler(c *gin.Context) {
+func (h *handler) ResetPasswordHandler(c *gin.Context) {
 	var input ResetPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Reset Failed", err.Error(), nil))
@@ -119,13 +131,13 @@ func getGoogleOauthConfig() *oauth2.Config {
 	}
 }
 
-func (h *Handler) GoogleLoginHandler(c *gin.Context) {
+func (h *handler) GoogleLoginHandler(c *gin.Context) {
 	googleConfig := getGoogleOauthConfig()
 	url := googleConfig.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	c.Redirect(http.StatusTemporaryRedirect, url)
 }
 
-func (h *Handler) GoogleCallbackHandler(c *gin.Context) {
+func (h *handler) GoogleCallbackHandler(c *gin.Context) {
 	if errParam := c.Query("error"); errParam != "" {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Google Login Failed", "Google returned error: "+errParam, nil))
 		return
@@ -169,7 +181,7 @@ func (h *Handler) GoogleCallbackHandler(c *gin.Context) {
 	}))
 }
 
-func (h *Handler) MeHandler(c *gin.Context) {
+func (h *handler) MeHandler(c *gin.Context) {
 	// Get user_id from context (set by middleware)
 	userID, exists := c.Get("user_id")
 	if !exists {

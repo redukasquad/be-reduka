@@ -7,7 +7,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/redukasquad/be-reduka/database/entities"
-	"github.com/redukasquad/be-reduka/modules/users"	
+	"github.com/redukasquad/be-reduka/modules/users"
 	"github.com/redukasquad/be-reduka/packages/utils"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/api/oauth2/v2"
@@ -34,13 +34,11 @@ func NewService(repo users.Repository) Service {
 
 func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	user := entities.User{
-		Username:     input.Username,
-		Email:        input.Email,
-		Role:         input.Role,
-		NoTelp:       input.NoTelp,
-		JenisKelamin: input.JenisKelamin,
-		Kelas:        input.Kelas,
-		IsVerified:   false,
+		Username:   input.Username,
+		Email:      input.Email,
+		Kelas:      "Kelas 12",
+		Role:       "Students",
+		IsVerified: false,
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
@@ -169,9 +167,9 @@ func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo)
 			Username:   googleUserInfo.Name,
 			Email:      googleUserInfo.Email,
 			Password:   "",
-			IsVerified: true,
 			Kelas:      "Kelas 12",
 			Role:       "Students",
+			IsVerified: true,
 		}
 		if err := s.repo.Create(newUser); err != nil {
 			return nil, "", err
