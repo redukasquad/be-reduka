@@ -34,6 +34,22 @@ func BuildResponseFailed(message string, err string, data any) Response {
 	return res
 }
 
+// ValidationError represents a single field validation error
+type ValidationError struct {
+	Field string `json:"field"`
+	Error string `json:"error"`
+}
+
+// BuildValidationErrorResponse creates a response with structured validation errors
+func BuildValidationErrorResponse(message string, errors []ValidationError) Response {
+	return Response{
+		Status:  false,
+		Message: message,
+		Error:   errors,
+		Data:    nil,
+	}
+}
+
 func StringToInt(str string) (int, error) {
 	result, err := strconv.Atoi(str)
 	if err != nil {
@@ -41,7 +57,6 @@ func StringToInt(str string) (int, error) {
 	}
 	return int(result), nil
 }
-
 
 type Meta struct {
 	Timestamp string `json:"timestamp"`

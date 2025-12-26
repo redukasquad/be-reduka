@@ -5,17 +5,22 @@ import (
 	"github.com/redukasquad/be-reduka/database/migrations"
 )
 
-func UserRouter(router *gin.RouterGroup, authMiddleware gin.HandlerFunc) {
+// UserRouter sets up user routes. Pass RequireAuth and RequireAdmin middleware from caller.
+func UserRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
 	userRepo := NewRepository(migrations.GetDB())
 	userService := NewService(userRepo)
 	userHandler := NewHandler(userService)
 
 	users := router.Group("/users")
-	users.Use(authMiddleware)
+	users.Use(requireAuth)
 	{
+		// All authenticated users can access these
 		users.GET("", userHandler.GetAllUsersHandler)
 		users.GET("/:id", userHandler.GetUserByIDHandler)
 		users.PUT("/:id", userHandler.UpdateUserHandler)
-		users.DELETE("/:id", userHandler.DeleteUserHandler)
+
+		// Admin only routes
+		users.PATCH("/:id/role", requireAdmin, userHandler.SetRoleHandler)
+		users.DELETE("/:id", requireAdmin, userHandler.DeleteUserHandler)
 	}
 }

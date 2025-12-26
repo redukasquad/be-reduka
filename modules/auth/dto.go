@@ -20,3 +20,7 @@ type ResetPasswordInput struct {
 	NewPassword     string `json:"new_password" binding:"required,min=6"`
 	ConfirmPassword string `json:"confirm_password" binding:"required,eqfield=NewPassword"`
 }
+
+type ResendVerificationInput struct {
+	Email string `json:"email" binding:"required,email"`
+}

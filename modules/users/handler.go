@@ -16,6 +16,7 @@ type Handler interface {
 	GetAllUsersHandler(c *gin.Context)
 	GetUserByIDHandler(c *gin.Context)
 	UpdateUserHandler(c *gin.Context)
+	SetRoleHandler(c *gin.Context)
 	DeleteUserHandler(c *gin.Context)
 }
 
@@ -71,6 +72,37 @@ func (h *handler) UpdateUserHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("User updated", user))
+}
+
+// SetRoleHandler allows admin to set a user's role (ADMIN only)
+func (h *handler) SetRoleHandler(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid ID", "ID must be a number", nil))
+		return
+	}
+
+	var input SetRoleInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		validationErrors := []utils.ValidationError{
+			{Field: "role", Error: "role is required and must be STUDENT, TUTOR, or ADMIN"},
+		}
+		c.JSON(http.StatusBadRequest, utils.BuildValidationErrorResponse("Validation failed", validationErrors))
+		return
+	}
+
+	user, err := h.service.SetRole(id, input.Role)
+	if err != nil {
+		if err.Error() == "user not found" {
+			c.JSON(http.StatusNotFound, utils.BuildResponseFailed("User not found", err.Error(), nil))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to set role", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("User role updated", user))
 }
 
 func (h *handler) DeleteUserHandler(c *gin.Context) {

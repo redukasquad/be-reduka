@@ -12,6 +12,13 @@ import (
 	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
+// Role constants
+const (
+	RoleAdmin   = "ADMIN"
+	RoleTutor   = "TUTOR"
+	RoleStudent = "STUDENT"
+)
+
 func RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
@@ -60,18 +67,34 @@ func RequireAuthorization(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		hasRole := false
+		userRole := ""
+		if user.Role != nil {
+			userRole = *user.Role
+		}
 		for _, role := range allowedRoles {
-			if strings.EqualFold(user.Role, role) {
+			if strings.EqualFold(userRole, role) {
 				hasRole = true
 				break
 			}
 		}
 
 		if !hasRole {
-			c.AbortWithStatusJSON(http.StatusForbidden, utils.BuildResponseFailed("Forbidden", fmt.Sprintf("User role '%s' is not authorized", user.Role), nil))
+			c.AbortWithStatusJSON(http.StatusForbidden, utils.BuildResponseFailed("Forbidden", fmt.Sprintf("Access denied. Required role: %v, your role: %s", allowedRoles, userRole), nil))
 			return
 		}
 
+		// Set user role in context for later use
+		c.Set("user_role", userRole)
 		c.Next()
 	}
+}
+
+// RequireAdmin is a shortcut for RequireAuthorization(RoleAdmin)
+func RequireAdmin() gin.HandlerFunc {
+	return RequireAuthorization(RoleAdmin)
+}
+
+// RequireAdminOrTutor is a shortcut for RequireAuthorization(RoleAdmin, RoleTutor)
+func RequireAdminOrTutor() gin.HandlerFunc {
+	return RequireAuthorization(RoleAdmin, RoleTutor)
 }

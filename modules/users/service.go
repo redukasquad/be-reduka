@@ -15,6 +15,7 @@ type Service interface {
 	GetAll() ([]entities.User, error)
 	GetByID(id int) (*entities.User, error)
 	Update(id int, input UpdateUserInput) (*entities.User, error)
+	SetRole(userID int, role string) (*entities.User, error)
 	Delete(id int) error
 }
 
@@ -47,7 +48,7 @@ func (s *userService) Update(id int, input UpdateUserInput) (*entities.User, err
 		return nil, err
 	}
 
-	// Update only provided fields
+	// Update only provided fields (Role is NOT allowed here - use SetRole instead)
 	if input.Username != nil {
 		user.Username = *input.Username
 	}
@@ -55,17 +56,34 @@ func (s *userService) Update(id int, input UpdateUserInput) (*entities.User, err
 		user.NoTelp = *input.NoTelp
 	}
 	if input.JenisKelamin != nil {
-		user.JenisKelamin = *input.JenisKelamin
+		user.JenisKelamin = input.JenisKelamin
 	}
 	if input.Kelas != nil {
-		user.Kelas = *input.Kelas
+		user.Kelas = input.Kelas
 	}
 	if input.ProfileImage != nil {
 		user.ProfileImage = *input.ProfileImage
 	}
-	if input.Role != nil {
-		user.Role = *input.Role
+
+	if err := s.repo.Update(user); err != nil {
+		return nil, err
 	}
+
+	user.Password = "" // Don't expose password
+	return &user, nil
+}
+
+// SetRole allows admin to set a user's role
+func (s *userService) SetRole(userID int, role string) (*entities.User, error) {
+	user, err := s.repo.FindByID(userID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+
+	user.Role = &role
 
 	if err := s.repo.Update(user); err != nil {
 		return nil, err

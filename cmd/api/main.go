@@ -16,10 +16,9 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load("../../.env"); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
-
 
 	migrations.ConnectDatabase()
 
@@ -40,7 +39,7 @@ func main() {
 	v1 := api.Group("/v1")
 	{
 		auth.AuthRouter(v1)
-		users.UserRouter(v1, middleware.RequireAuth())
+		users.UserRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 	}
 
 	port := os.Getenv("GOLANG_PORT")

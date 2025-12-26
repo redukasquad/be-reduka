@@ -18,6 +18,7 @@ type Service interface {
 	Register(input RegisterInput) (entities.User, error)
 	Login(input LoginInput) (string, error)
 	VerifyEmail(code string) error
+	ResendVerificationCode(email string) error
 	Me(user_id int) (*entities.User, error)
 	LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error)
 	ForgotPassword(input ForgotPasswordInput) error
@@ -33,12 +34,13 @@ func NewService(repo users.Repository) Service {
 }
 
 func (s *authService) Register(input RegisterInput) (entities.User, error) {
+	defaultRole := "STUDENT"
 	user := entities.User{
-		Username:   input.Username,
-		Email:      input.Email,
-		Kelas:      "Kelas 12",
-		Role:       "Students",
-		IsVerified: false,
+		Username:     input.Username,
+		Email:        input.Email,
+		AuthProvider: "PASSWORD",
+		Role:         &defaultRole,
+		IsVerified:   false,
 	}
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
@@ -80,18 +82,57 @@ func (s *authService) VerifyEmail(code string) error {
 	return s.repo.Update(user)
 }
 
+func (s *authService) ResendVerificationCode(email string) error {
+	user, err := s.repo.FindByEmail(email)
+	if err != nil {
+		return errors.New("email not found")
+	}
+
+	if user.IsVerified {
+		return errors.New("email already verified")
+	}
+
+	// Generate new verification code
+	code := utils.GenerateVerificationCode()
+	user.VerificationCode = code
+
+	if err := s.repo.Update(user); err != nil {
+		return err
+	}
+
+	// Send verification email
+	emailBody := `
+		<h2>Email Verification</h2>
+		<p>Your verification code is: <strong>` + code + `</strong></p>
+		<p>This code will expire in 15 minutes.</p>
+	`
+	go utils.SendEmail(user.Email, "Email Verification - Reduka", emailBody)
+
+	return nil
+}
+
 func (s *authService) Login(input LoginInput) (string, error) {
 	email := input.Email
 	password := input.Password
 
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
-		return "", errors.New("User not found")
+		return "", errors.New("invalid email or password")
+	}
+
+	// Check if user registered with Google
+	if user.AuthProvider == "GOOGLE" {
+		return "", errors.New("this account uses Google login")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		return "", errors.New("invalid email or password")
+	}
+
+	// Check if email is verified
+	if !user.IsVerified {
+		return "", errors.New("email not verified")
 	}
 
 	return generateToken(int(user.ID))
@@ -163,13 +204,15 @@ func (s *authService) ResetPassword(input ResetPasswordInput) error {
 func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error) {
 	user, err := s.repo.FindByEmail(googleUserInfo.Email)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		// New user - register with Google
+		defaultRole := "STUDENT"
 		newUser := &entities.User{
-			Username:   googleUserInfo.Name,
-			Email:      googleUserInfo.Email,
-			Password:   "",
-			Kelas:      "Kelas 12",
-			Role:       "Students",
-			IsVerified: true,
+			Username:     googleUserInfo.Name,
+			Email:        googleUserInfo.Email,
+			Password:     "",
+			AuthProvider: "GOOGLE",
+			Role:         &defaultRole,
+			IsVerified:   true,
 		}
 		if err := s.repo.Create(newUser); err != nil {
 			return nil, "", err
@@ -177,6 +220,11 @@ func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo)
 		user = *newUser
 	} else if err != nil {
 		return nil, "", err
+	} else {
+		// Existing user - check if they registered with password
+		if user.AuthProvider == "PASSWORD" {
+			return nil, "", errors.New("this account uses password login")
+		}
 	}
 
 	token, err := generateToken(int(user.ID))
