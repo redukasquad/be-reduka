@@ -86,7 +86,7 @@ func (s *authService) Login(input LoginInput) (string, error) {
 
 	user, err := s.repo.FindByEmail(email)
 	if err != nil {
-		return "", errors.New("invalid email or password")
+		return "", errors.New("User not found")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
