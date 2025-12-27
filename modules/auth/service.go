@@ -55,13 +55,13 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	code := utils.GenerateVerificationCode()
 	user.VerificationCode = code
 
+	emailBody := "Your verification code is: " + code
+	go utils.SendEmail(user.Email, "Email Verification", emailBody)
+	
 	err = s.repo.Create(&user)
 	if err != nil {
 		return user, err
 	}
-
-	emailBody := "Your verification code is: " + code
-	go utils.SendEmail(user.Email, "Email Verification", emailBody)
 
 	return user, nil
 }
