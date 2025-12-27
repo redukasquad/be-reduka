@@ -17,7 +17,7 @@ type User struct {
 
 	Kelas *string `json:"kelas" form:"kelas" binding:"omitempty,oneof='Kelas 10' 'Kelas 11' 'Kelas 12' 'Gapyer (Alumni)'" gorm:"type:enum('Kelas 10','Kelas 11','Kelas 12','Gapyer (Alumni)')"`
 
-	Role *string `json:"role" form:"role" binding:"omitempty,oneof=STUDENT ADMIN TUTOR" gorm:"type:enum('STUDENT','ADMIN','TUTOR')"`
+	Role *string `json:"role" gorm:"type:enum('STUDENT','ADMIN','TUTOR');default:'STUDENT'"`
 
 	// AuthProvider indicates how the user registered (PASSWORD or GOOGLE)
 	AuthProvider string `json:"authProvider" gorm:"type:enum('PASSWORD','GOOGLE');default:'PASSWORD'"`
