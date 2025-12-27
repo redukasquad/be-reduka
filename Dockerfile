@@ -1,9 +1,9 @@
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 WORKDIR /app
 
 # Install certificates for HTTPS
-RUN apk add --no-cache ca-certificates
+RUN apk add --no-cache ca-certificates git
 
 # Copy go mod files first for better caching
 COPY go.mod go.sum ./
@@ -20,14 +20,14 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Install certificates
+# Install certificates and timezone data
 RUN apk --no-cache add ca-certificates tzdata
 
 # Copy binary from builder
 COPY --from=builder /app/main .
 
-# Copy .env file (if exists)
-COPY .env* ./
+# Environment variables are set in Render Dashboard
+# Do not copy .env file for security
 
 EXPOSE 8888
 

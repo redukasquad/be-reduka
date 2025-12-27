@@ -43,14 +43,20 @@ services:
     volumes:
       - .:/app
       - /app/tmp
-    env_file:
-      - .env
     environment:
       - DB_HOST=mysql
       - DB_USER=reduka
       - DB_PASS=reduka123
       - DB_NAME=reduka
       - DB_PORT=3306
+      - GOLANG_PORT=8888
+      - JWT_SECRET=d2f6c8a4e91b7c3f0a9d4b6e82c1f7a4c9e3b1d7f5a2c8e6b4f7a1c9d3e8b6f2
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SENDER_NAME=Reduka <redukasquad@gmail.com>
+      - SMTP_AUTH_EMAIL=redukasquad@gmail.com
+      - SMTP_AUTH_PASSWORD=ufaq frdw gyae dkfe
+      - FRONTEND_URL=http://localhost:5173
     depends_on:
       mysql:
         condition: service_healthy

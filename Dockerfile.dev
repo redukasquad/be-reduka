@@ -2,6 +2,12 @@ FROM golang:1.23-alpine
 
 WORKDIR /app
 
+# Install git and build dependencies (required for some Go packages)
+RUN apk add --no-cache git ca-certificates
+
+# Set GOTOOLCHAIN to auto to let Go download the correct version
+ENV GOTOOLCHAIN=auto
+
 # Install Air for hot-reload
 RUN go install github.com/air-verse/air@latest
 
@@ -11,9 +17,6 @@ RUN go mod download
 
 # Copy source code
 COPY . .
-
-# Build for verification
-RUN go build -o /tmp/main cmd/api/main.go
 
 EXPOSE 8888
 
