@@ -31,16 +31,10 @@ services:
       - key: FRONTEND_URL
         sync: false
       
-      # SMTP Configuration (set in Render Dashboard)
-      - key: SMTP_HOST
+      # Resend Email API Configuration (set in Render Dashboard)
+      - key: RESEND_API_KEY
         sync: false
-      - key: SMTP_PORT
-        sync: false
-      - key: SMTP_SENDER_NAME
-        sync: false
-      - key: SMTP_AUTH_EMAIL
-        sync: false
-      - key: SMTP_AUTH_PASSWORD
+      - key: RESEND_FROM_EMAIL
         sync: false
       
       # Google OAuth (set in Render Dashboard)

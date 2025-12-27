@@ -1,43 +1,74 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
-
-	"gopkg.in/gomail.v2"
 )
 
+type ResendEmailRequest struct {
+	From    string   `json:"from"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	Html    string   `json:"html"`
+}
+
 func SendEmail(to string, subject string, body string) error {
-	smtpHost := os.Getenv("SMTP_HOST")
-	smtpPortStr := os.Getenv("SMTP_PORT")
-	smtpEmail := os.Getenv("SMTP_AUTH_EMAIL")
-	smtpPassword := os.Getenv("SMTP_AUTH_PASSWORD")
-	smtpSenderName := os.Getenv("SMTP_SENDER_NAME")
+	apiKey := os.Getenv("RESEND_API_KEY")
+	senderEmail := os.Getenv("RESEND_FROM_EMAIL")
 
-	// Debug: Log SMTP configuration (without password)
 	log.Printf("[EMAIL] Attempting to send email to: %s", to)
-	log.Printf("[EMAIL] SMTP Config - Host: %s, Port: %s, Email: %s, SenderName: %s", smtpHost, smtpPortStr, smtpEmail, smtpSenderName)
 
-	smtpPort, err := strconv.Atoi(smtpPortStr)
+	if apiKey == "" {
+		log.Printf("[EMAIL] ERROR: RESEND_API_KEY is not set")
+		return fmt.Errorf("RESEND_API_KEY is not set")
+	}
+
+	if senderEmail == "" {
+		senderEmail = "onboarding@resend.dev" // Default Resend sender for testing
+	}
+
+	emailReq := ResendEmailRequest{
+		From:    senderEmail,
+		To:      []string{to},
+		Subject: subject,
+		Html:    body,
+	}
+
+	jsonData, err := json.Marshal(emailReq)
 	if err != nil {
-		log.Printf("[EMAIL] ERROR: Invalid SMTP_PORT: %s", smtpPortStr)
+		log.Printf("[EMAIL] ERROR marshaling request: %v", err)
 		return err
 	}
 
-	m := gomail.NewMessage()
-	m.SetHeader("From", smtpSenderName)
-	m.SetHeader("To", to)
-	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", body)
-
-	d := gomail.NewDialer(smtpHost, smtpPort, smtpEmail, smtpPassword)
-
-	if err := d.DialAndSend(m); err != nil {
-		log.Printf("[EMAIL] ERROR sending email to %s: %v", to, err)
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("[EMAIL] ERROR creating request: %v", err)
 		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("[EMAIL] ERROR sending request: %v", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		var errorBody bytes.Buffer
+		errorBody.ReadFrom(resp.Body)
+		log.Printf("[EMAIL] ERROR response from Resend (status %d): %s", resp.StatusCode, errorBody.String())
+		return fmt.Errorf("resend API error: %s", errorBody.String())
 	}
 
 	log.Printf("[EMAIL] SUCCESS: Email sent to %s", to)
