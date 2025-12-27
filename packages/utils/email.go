@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -16,7 +17,15 @@ func SendEmail(to string, subject string, body string) error {
 	smtpPassword := os.Getenv("SMTP_AUTH_PASSWORD")
 	smtpSenderName := os.Getenv("SMTP_SENDER_NAME")
 
-	smtpPort, _ := strconv.Atoi(smtpPortStr)
+	// Debug: Log SMTP configuration (without password)
+	log.Printf("[EMAIL] Attempting to send email to: %s", to)
+	log.Printf("[EMAIL] SMTP Config - Host: %s, Port: %s, Email: %s, SenderName: %s", smtpHost, smtpPortStr, smtpEmail, smtpSenderName)
+
+	smtpPort, err := strconv.Atoi(smtpPortStr)
+	if err != nil {
+		log.Printf("[EMAIL] ERROR: Invalid SMTP_PORT: %s", smtpPortStr)
+		return err
+	}
 
 	m := gomail.NewMessage()
 	m.SetHeader("From", smtpSenderName)
@@ -27,9 +36,11 @@ func SendEmail(to string, subject string, body string) error {
 	d := gomail.NewDialer(smtpHost, smtpPort, smtpEmail, smtpPassword)
 
 	if err := d.DialAndSend(m); err != nil {
+		log.Printf("[EMAIL] ERROR sending email to %s: %v", to, err)
 		return err
 	}
 
+	log.Printf("[EMAIL] SUCCESS: Email sent to %s", to)
 	return nil
 }
 
