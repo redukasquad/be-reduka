@@ -24,3 +24,8 @@ type ResetPasswordInput struct {
 type ResendVerificationInput struct {
 	Email string `json:"email" binding:"required,email"`
 }
+
+type VerifyEmailInput struct {
+	Email string `json:"email" binding:"required,email"`
+	Code  string `json:"code" binding:"required"`
+}

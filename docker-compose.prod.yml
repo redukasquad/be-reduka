@@ -3,18 +3,15 @@ version: '3.8'
 services:
   mysql:
     image: mysql:8.0
-    container_name: reduka_mysql
+    container_name: reduka_mysql_prod
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: reduka
-      MYSQL_USER: reduka
-      MYSQL_PASSWORD: reduka123
-    ports:
-      - "3307:3306"
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-reduka}
+      MYSQL_USER: ${DB_USER:-reduka}
+      MYSQL_PASSWORD: ${DB_PASS:-reduka123}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./dbshell:/docker-entrypoint-initdb.d/
     networks:
       - reduka_network
     healthcheck:
@@ -24,7 +21,7 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: reduka_redis
+    container_name: reduka_redis_prod
     restart: always
     command: [ "redis-server", "--appendonly", "yes" ]
     volumes:
@@ -33,23 +30,17 @@ services:
       - reduka_network
 
   api:
-    container_name: reduka_api
+    container_name: reduka_api_prod
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     restart: always
     ports:
-      - "8888:8888"
-    volumes:
-      - .:/app
-      - /app/tmp
+      - "${GOLANG_PORT:-8888}:8888"
     env_file:
       - .env
     environment:
       - DB_HOST=mysql
-      - DB_USER=reduka
-      - DB_PASS=reduka123
-      - DB_NAME=reduka
       - DB_PORT=3306
     depends_on:
       mysql:

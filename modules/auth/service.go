@@ -17,7 +17,7 @@ import (
 type Service interface {
 	Register(input RegisterInput) (entities.User, error)
 	Login(input LoginInput) (string, error)
-	VerifyEmail(code string) error
+	VerifyEmail(email, code string) error
 	ResendVerificationCode(email string) error
 	Me(user_id int) (*entities.User, error)
 	LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error)
@@ -53,7 +53,12 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 		return user, errors.New("email already registered")
 	}
 	code := utils.GenerateVerificationCode()
-	user.VerificationCode = code
+	// Hash verification code before saving to database
+	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
+	if err != nil {
+		return user, err
+	}
+	user.VerificationCode = string(hashedCode)
 
 	err = s.repo.Create(&user)
 	if err != nil {
@@ -66,14 +71,20 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	return user, nil
 }
 
-func (s *authService) VerifyEmail(code string) error {
-	user, err := s.repo.FindByVerificationCode(code)
+func (s *authService) VerifyEmail(email, code string) error {
+	user, err := s.repo.FindByEmail(email)
 	if err != nil {
-		return errors.New("invalid verification code")
+		return errors.New("email not found")
 	}
 
 	if user.IsVerified {
 		return errors.New("email already verified")
+	}
+
+	// Compare verification code with bcrypt hash
+	err = bcrypt.CompareHashAndPassword([]byte(user.VerificationCode), []byte(code))
+	if err != nil {
+		return errors.New("invalid verification code")
 	}
 
 	user.IsVerified = true
@@ -92,9 +103,13 @@ func (s *authService) ResendVerificationCode(email string) error {
 		return errors.New("email already verified")
 	}
 
-	// Generate new verification code
+	// Generate new verification code and hash it
 	code := utils.GenerateVerificationCode()
-	user.VerificationCode = code
+	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
+	if err != nil {
+		return err
+	}
+	user.VerificationCode = string(hashedCode)
 
 	if err := s.repo.Update(user); err != nil {
 		return err

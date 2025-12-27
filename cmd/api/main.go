@@ -17,7 +17,8 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load("../../.env"); err != nil {
+	err := godotenv.Load("../../.env")
+	if err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
 	migrations.ConnectDatabase()

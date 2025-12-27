@@ -15,3 +15,5 @@
 {"time":"2025-12-27T09:55:41.104944+07:00","level":"INFO","msg":"Program created successfully","domain":"programs","action":"create","request_id":"dd8a3bfe-3648-443a-bd6a-f76ab532c216","user_id":0}
 {"time":"2025-12-27T09:55:45.773197+07:00","level":"INFO","msg":"Fetching all programs","domain":"programs","action":"get_all","request_id":"1da8ee81-0c8d-4852-8e71-ce46242ad16d","user_id":0}
 {"time":"2025-12-27T09:55:45.8172004+07:00","level":"INFO","msg":"Successfully fetched all programs","domain":"programs","action":"get_all","request_id":"1da8ee81-0c8d-4852-8e71-ce46242ad16d","user_id":0}
+{"time":"2025-12-27T13:01:41.2168807+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2025-12-27T13:03:38.1283399+07:00","level":"INFO","msg":"Logger initialized"}

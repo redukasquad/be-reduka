@@ -168,14 +168,43 @@ func (h *handler) LoginHandler(c *gin.Context) {
 }
 
 func (h *handler) VerifyEmailHandler(c *gin.Context) {
-	code := c.Query("code")
-	if code == "" {
-		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Verification failed", "verification code is required", nil))
+	var input VerifyEmailInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		validationErrors := []utils.ValidationError{}
+		if strings.Contains(err.Error(), "Email") {
+			validationErrors = append(validationErrors, utils.ValidationError{Field: "email", Error: "email is required and must be valid"})
+		}
+		if strings.Contains(err.Error(), "Code") {
+			validationErrors = append(validationErrors, utils.ValidationError{Field: "code", Error: "verification code is required"})
+		}
+		if len(validationErrors) > 0 {
+			c.JSON(http.StatusBadRequest, utils.BuildValidationErrorResponse("Validation failed", validationErrors))
+			return
+		}
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Verification failed", err.Error(), nil))
 		return
 	}
 
-	err := h.service.VerifyEmail(code)
+	err := h.service.VerifyEmail(input.Email, input.Code)
 	if err != nil {
+		if strings.Contains(err.Error(), "email not found") {
+			validationErrors := []utils.ValidationError{
+				{Field: "email", Error: "email is not registered"},
+			}
+			c.JSON(http.StatusNotFound, utils.BuildValidationErrorResponse("Email not found", validationErrors))
+			return
+		}
+		if strings.Contains(err.Error(), "email already verified") {
+			c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Already verified", "email is already verified", nil))
+			return
+		}
+		if strings.Contains(err.Error(), "invalid verification code") {
+			validationErrors := []utils.ValidationError{
+				{Field: "code", Error: "invalid verification code"},
+			}
+			c.JSON(http.StatusBadRequest, utils.BuildValidationErrorResponse("Verification failed", validationErrors))
+			return
+		}
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Verification failed", err.Error(), nil))
 		return
 	}
