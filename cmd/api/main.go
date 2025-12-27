@@ -11,6 +11,7 @@ import (
 	"github.com/redukasquad/be-reduka/database/migrations"
 	"github.com/redukasquad/be-reduka/middleware"
 	"github.com/redukasquad/be-reduka/modules/auth"
+	"github.com/redukasquad/be-reduka/modules/programs"
 	"github.com/redukasquad/be-reduka/modules/users"
 	"github.com/redukasquad/be-reduka/packages/utils"
 )
@@ -19,7 +20,6 @@ func main() {
 	if err := godotenv.Load("../../.env"); err != nil {
 		log.Println("No .env file found, using system environment variables")
 	}
-
 	migrations.ConnectDatabase()
 
 	utils.InitLogger()
@@ -40,6 +40,7 @@ func main() {
 	{
 		auth.AuthRouter(v1)
 		users.UserRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
+		programs.ProgramRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 	}
 
 	port := os.Getenv("GOLANG_PORT")
