@@ -40,8 +40,10 @@ func getAllowedOrigins() []string {
 func main() {
 	// Load .env file if exists (for local development)
 	// In production, environment variables are set directly
-	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found, using system environment variables")
+	if os.Getenv("APP_ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Println("No .env file found")
+		}
 	}
 
 	migrations.ConnectDatabase()
