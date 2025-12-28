@@ -12,6 +12,7 @@ import (
 	"github.com/redukasquad/be-reduka/database/migrations"
 	"github.com/redukasquad/be-reduka/middleware"
 	"github.com/redukasquad/be-reduka/modules/auth"
+	"github.com/redukasquad/be-reduka/modules/courses"
 	"github.com/redukasquad/be-reduka/modules/health"
 	"github.com/redukasquad/be-reduka/modules/programs"
 	"github.com/redukasquad/be-reduka/modules/users"
@@ -70,6 +71,7 @@ func main() {
 		auth.AuthRouter(v1)
 		users.UserRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 		programs.ProgramRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
+		courses.CoursesRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 	}
 
 	port := os.Getenv("GOLANG_PORT")
