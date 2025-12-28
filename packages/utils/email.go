@@ -60,11 +60,11 @@ func SendEmail(to string, subject string, body string) error {
 
 	// Build the email message with proper headers
 	msg := []byte(
-	"From: " + config.From + "\r\n" +
-	"To: " + to + "\r\n" +
-	"Subject: " + subject + "\r\n" +
-	"MIME-Version: 1.0\r\n" +
-	"Content-Type: text/plain; charset=\"UTF-8\"\r\n\r\n" +
+		"From: " + config.From + "\r\n" +
+		"To: " + to + "\r\n" +
+		"Subject: " + subject + "\r\n" +
+		"MIME-Version: 1.0\r\n" +
+		"Content-Type: text/plain; charset=\"UTF-8\"\r\n\r\n" +
 	body,
 	)
 
