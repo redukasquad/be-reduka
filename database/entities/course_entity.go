@@ -22,4 +22,5 @@ type Course struct {
 	Program  Program        `json:"program,omitempty"`
 	Subjects []ClassSubject `json:"subjects,omitempty" gorm:"foreignKey:CourseID"`
 	Creator  User           `json:"creator,omitempty" gorm:"foreignKey:CreatedByUserID"`
+	Questions []RegistrationQuestion `gorm:"foreignKey:CourseID"`
 }
