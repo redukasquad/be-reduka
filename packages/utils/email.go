@@ -1,74 +1,79 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
-	"net/http"
+	"net/smtp"
 	"os"
 	"strconv"
 	"time"
 )
 
-type ResendEmailRequest struct {
-	From    string   `json:"from"`
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	Html    string   `json:"html"`
+// SMTPConfig holds SMTP configuration
+type SMTPConfig struct {
+	Host     string
+	Port     string
+	Username string
+	Password string
+	From     string
+}
+
+// GetSMTPConfig returns SMTP configuration from environment variables
+func GetSMTPConfig() SMTPConfig {
+	return SMTPConfig{
+		Host:     os.Getenv("SMTP_HOST"),
+		Port:     os.Getenv("SMTP_PORT"),
+		Username: os.Getenv("SMTP_USERNAME"),
+		Password: os.Getenv("SMTP_PASSWORD"),
+		From:     os.Getenv("SMTP_FROM_EMAIL"),
+	}
 }
 
 func SendEmail(to string, subject string, body string) error {
-	apiKey := os.Getenv("RESEND_API_KEY")
-	senderEmail := os.Getenv("RESEND_FROM_EMAIL")
+	config := GetSMTPConfig()
 
 	log.Printf("[EMAIL] Attempting to send email to: %s", to)
 
-	if apiKey == "" {
-		log.Printf("[EMAIL] ERROR: RESEND_API_KEY is not set")
-		return fmt.Errorf("RESEND_API_KEY is not set")
+	// Validate configuration
+	if config.Host == "" {
+		log.Printf("[EMAIL] ERROR: SMTP_HOST is not set")
+		return fmt.Errorf("SMTP_HOST is not set")
+	}
+	if config.Port == "" {
+		config.Port = "587" // Default SMTP port
+	}
+	if config.Username == "" {
+		log.Printf("[EMAIL] ERROR: SMTP_USERNAME is not set")
+		return fmt.Errorf("SMTP_USERNAME is not set")
+	}
+	if config.Password == "" {
+		log.Printf("[EMAIL] ERROR: SMTP_PASSWORD is not set")
+		return fmt.Errorf("SMTP_PASSWORD is not set")
+	}
+	if config.From == "" {
+		config.From = config.Username // Default to username if from is not set
 	}
 
-	if senderEmail == "" {
-		senderEmail = "onboarding@resend.dev" // Default Resend sender for testing
-	}
+	// Setup authentication
+	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 
-	emailReq := ResendEmailRequest{
-		From:    senderEmail,
-		To:      []string{to},
-		Subject: subject,
-		Html:    body,
-	}
+	// Build the email message with proper headers
+	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
+	msg := []byte(fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s\r\n%s",
+		config.From,
+		to,
+		subject,
+		mime,
+		body,
+	))
 
-	jsonData, err := json.Marshal(emailReq)
+	// Send email
+	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)
+	err := smtp.SendMail(addr, auth, config.From, []string{to}, msg)
 	if err != nil {
-		log.Printf("[EMAIL] ERROR marshaling request: %v", err)
-		return err
-	}
-
-	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
-	if err != nil {
-		log.Printf("[EMAIL] ERROR creating request: %v", err)
-		return err
-	}
-
-	req.Header.Set("Authorization", "Bearer "+apiKey)
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{Timeout: 30 * time.Second}
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Printf("[EMAIL] ERROR sending request: %v", err)
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 400 {
-		var errorBody bytes.Buffer
-		errorBody.ReadFrom(resp.Body)
-		log.Printf("[EMAIL] ERROR response from Resend (status %d): %s", resp.StatusCode, errorBody.String())
-		return fmt.Errorf("resend API error: %s", errorBody.String())
+		log.Printf("[EMAIL] ERROR sending email: %v", err)
+		return fmt.Errorf("failed to send email: %w", err)
 	}
 
 	log.Printf("[EMAIL] SUCCESS: Email sent to %s", to)
