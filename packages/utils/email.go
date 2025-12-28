@@ -59,14 +59,14 @@ func SendEmail(to string, subject string, body string) error {
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 
 	// Build the email message with proper headers
-	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-	msg := []byte(fmt.Sprintf("From: %s\r\nTo: %s\r\nSubject: %s\r\n%s\r\n%s",
-		config.From,
-		to,
-		subject,
-		mime,
-		body,
-	))
+	msg := []byte(
+	"From: " + config.From + "\r\n" +
+	"To: " + to + "\r\n" +
+	"Subject: " + subject + "\r\n" +
+	"MIME-Version: 1.0\r\n" +
+	"Content-Type: text/plain; charset=\"UTF-8\"\r\n\r\n" +
+	body,
+	)
 
 	// Send email
 	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)

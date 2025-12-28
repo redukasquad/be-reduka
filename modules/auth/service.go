@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"log"
 	"os"
 	"time"
 
@@ -60,12 +61,15 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	}
 	user.VerificationCode = string(hashedCode)
 
-	emailBody := "Your verification code is: " + code
-	go utils.SendEmail(user.Email, "Email Verification", emailBody)
-	
 	err = s.repo.Create(&user)
 	if err != nil {
 		return user, err
+	}
+
+	emailBody := "Your verification code is: " + code
+	err = utils.SendEmail(user.Email, "Email Verification", emailBody)
+	if err != nil {
+		log.Println("[EMAIL] FAILED:", err)
 	}
 
 	return user, nil
