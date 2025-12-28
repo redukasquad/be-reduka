@@ -86,10 +86,10 @@ func (h *handler) GetCourseByIDHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Course retrieved successfully", course))
 }
 
-// GetCoursesByProgramIDHandler handles GET /courses/program/:programId
+// GetCoursesByProgramIDHandler handles GET /programs/:id/courses
 func (h *handler) GetCoursesByProgramIDHandler(c *gin.Context) {
 	requestID := getRequestID(c)
-	programIDStr := c.Param("programId")
+	programIDStr := c.Param("id")
 
 	programID, err := strconv.ParseUint(programIDStr, 10, 32)
 	if err != nil {

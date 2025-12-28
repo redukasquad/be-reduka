@@ -28,6 +28,6 @@ func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 		courseByID.DELETE("/:id", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
 	}
 
-	// Routes by program - use different path to avoid conflict
-	router.GET("/programs/:programId/courses", courseHandler.GetCoursesByProgramIDHandler)
+	// Routes by program - nested under programs to align with programs module
+	router.GET("/programs/:id/courses", courseHandler.GetCoursesByProgramIDHandler)
 }
