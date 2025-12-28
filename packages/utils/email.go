@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net"
 	"net/smtp"
 	"os"
 	"strconv"
@@ -27,9 +28,14 @@ func GetSMTPConfig() SMTPConfig {
 		fromEmail = os.Getenv("SMTP_USERNAME") // Fall back to username
 	}
 
+	port := os.Getenv("SMTP_PORT")
+	if port == "" {
+		port = "587"
+	}
+
 	return SMTPConfig{
 		Host:     os.Getenv("SMTP_HOST"),
-		Port:     os.Getenv("SMTP_PORT"),
+		Port:     port,
 		Username: os.Getenv("SMTP_USERNAME"),
 		Password: os.Getenv("SMTP_PASSWORD"),
 		From:     fromEmail,
@@ -40,16 +46,12 @@ func SendEmail(to string, subject string, body string) error {
 	config := GetSMTPConfig()
 
 	log.Printf("[EMAIL] Attempting to send email to: %s", to)
-	log.Printf("[EMAIL] Using SMTP Host: %s:%s", config.Host, config.Port)
-	log.Printf("[EMAIL] From: %s", config.From)
+	log.Printf("[EMAIL] Using SMTP: %s:%s from %s", config.Host, config.Port, config.From)
 
 	// Validate configuration
 	if config.Host == "" {
 		log.Printf("[EMAIL] ERROR: SMTP_HOST is not set")
 		return fmt.Errorf("SMTP_HOST is not set")
-	}
-	if config.Port == "" {
-		config.Port = "587" // Default SMTP port
 	}
 	if config.Username == "" {
 		log.Printf("[EMAIL] ERROR: SMTP_USERNAME is not set")
@@ -58,9 +60,6 @@ func SendEmail(to string, subject string, body string) error {
 	if config.Password == "" {
 		log.Printf("[EMAIL] ERROR: SMTP_PASSWORD is not set")
 		return fmt.Errorf("SMTP_PASSWORD is not set")
-	}
-	if config.From == "" {
-		config.From = config.Username
 	}
 
 	// Build the email message
@@ -73,28 +72,37 @@ func SendEmail(to string, subject string, body string) error {
 			body,
 	)
 
-	// Connect to the SMTP server with TLS
 	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)
 
-	// TLS configuration
+	// Try based on port
+	if config.Port == "465" {
+		// Port 465 uses implicit TLS (SSL)
+		return sendWithSSL(config, to, msg, addr)
+	}
+
+	// Port 587 or 25 uses STARTTLS
+	return sendWithSTARTTLS(config, to, msg, addr)
+}
+
+func sendWithSSL(config SMTPConfig, to string, msg []byte, addr string) error {
+	log.Printf("[EMAIL] Using SSL/TLS connection")
+
+	// Connect with TLS directly
 	tlsConfig := &tls.Config{
 		ServerName: config.Host,
 	}
 
-	// Connect to the server
-	conn, err := tls.Dial("tcp", addr, tlsConfig)
+	conn, err := tls.DialWithDialer(&net.Dialer{Timeout: 10 * time.Second}, "tcp", addr, tlsConfig)
 	if err != nil {
-		// If direct TLS fails, try STARTTLS approach
-		log.Printf("[EMAIL] Direct TLS failed, trying STARTTLS: %v", err)
-		return sendWithSTARTTLS(config, to, msg)
+		log.Printf("[EMAIL] ERROR connecting with TLS: %v", err)
+		return fmt.Errorf("TLS dial failed: %w", err)
 	}
 	defer conn.Close()
 
-	// Create SMTP client
 	client, err := smtp.NewClient(conn, config.Host)
 	if err != nil {
 		log.Printf("[EMAIL] ERROR creating SMTP client: %v", err)
-		return fmt.Errorf("failed to create SMTP client: %w", err)
+		return fmt.Errorf("SMTP client creation failed: %w", err)
 	}
 	defer client.Close()
 
@@ -102,112 +110,106 @@ func SendEmail(to string, subject string, body string) error {
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
 	if err = client.Auth(auth); err != nil {
 		log.Printf("[EMAIL] ERROR authenticating: %v", err)
-		return fmt.Errorf("failed to authenticate: %w", err)
+		return fmt.Errorf("authentication failed: %w", err)
 	}
 
-	// Set sender and recipient
+	// Send email
 	if err = client.Mail(config.From); err != nil {
 		log.Printf("[EMAIL] ERROR setting sender: %v", err)
-		return fmt.Errorf("failed to set sender: %w", err)
+		return fmt.Errorf("set sender failed: %w", err)
 	}
-
 	if err = client.Rcpt(to); err != nil {
 		log.Printf("[EMAIL] ERROR setting recipient: %v", err)
-		return fmt.Errorf("failed to set recipient: %w", err)
+		return fmt.Errorf("set recipient failed: %w", err)
 	}
 
-	// Send the email body
 	w, err := client.Data()
 	if err != nil {
 		log.Printf("[EMAIL] ERROR getting data writer: %v", err)
-		return fmt.Errorf("failed to get data writer: %w", err)
+		return fmt.Errorf("data command failed: %w", err)
 	}
 
 	_, err = w.Write(msg)
 	if err != nil {
 		log.Printf("[EMAIL] ERROR writing message: %v", err)
-		return fmt.Errorf("failed to write message: %w", err)
+		return fmt.Errorf("write message failed: %w", err)
 	}
 
 	err = w.Close()
 	if err != nil {
 		log.Printf("[EMAIL] ERROR closing writer: %v", err)
-		return fmt.Errorf("failed to close writer: %w", err)
+		return fmt.Errorf("close writer failed: %w", err)
 	}
 
 	client.Quit()
-
-	log.Printf("[EMAIL] SUCCESS: Email sent to %s", to)
+	log.Printf("[EMAIL] SUCCESS: Email sent to %s via SSL", to)
 	return nil
 }
 
-func sendWithSTARTTLS(config SMTPConfig, to string, msg []byte) error {
-	addr := fmt.Sprintf("%s:%s", config.Host, config.Port)
+func sendWithSTARTTLS(config SMTPConfig, to string, msg []byte, addr string) error {
+	log.Printf("[EMAIL] Using STARTTLS connection")
 
-	// Connect to server without TLS first
-	conn, err := smtp.Dial(addr)
+	// Connect with timeout
+	conn, err := net.DialTimeout("tcp", addr, 10*time.Second)
 	if err != nil {
-		log.Printf("[EMAIL] ERROR dialing SMTP: %v", err)
-		return fmt.Errorf("failed to dial SMTP: %w", err)
+		log.Printf("[EMAIL] ERROR dialing: %v", err)
+		return fmt.Errorf("dial failed: %w", err)
 	}
 	defer conn.Close()
 
-	// Say hello
-	if err = conn.Hello("localhost"); err != nil {
-		log.Printf("[EMAIL] ERROR HELO: %v", err)
-		return fmt.Errorf("failed HELO: %w", err)
+	client, err := smtp.NewClient(conn, config.Host)
+	if err != nil {
+		log.Printf("[EMAIL] ERROR creating client: %v", err)
+		return fmt.Errorf("client creation failed: %w", err)
 	}
+	defer client.Close()
 
-	// Start TLS
+	// STARTTLS
 	tlsConfig := &tls.Config{
 		ServerName: config.Host,
 	}
-	if err = conn.StartTLS(tlsConfig); err != nil {
+	if err = client.StartTLS(tlsConfig); err != nil {
 		log.Printf("[EMAIL] ERROR STARTTLS: %v", err)
-		return fmt.Errorf("failed STARTTLS: %w", err)
+		return fmt.Errorf("STARTTLS failed: %w", err)
 	}
 
 	// Authenticate
 	auth := smtp.PlainAuth("", config.Username, config.Password, config.Host)
-	if err = conn.Auth(auth); err != nil {
+	if err = client.Auth(auth); err != nil {
 		log.Printf("[EMAIL] ERROR authenticating: %v", err)
-		return fmt.Errorf("failed to authenticate: %w", err)
+		return fmt.Errorf("authentication failed: %w", err)
 	}
 
-	// Set sender
-	if err = conn.Mail(config.From); err != nil {
+	// Send email
+	if err = client.Mail(config.From); err != nil {
 		log.Printf("[EMAIL] ERROR setting sender: %v", err)
-		return fmt.Errorf("failed to set sender: %w", err)
+		return fmt.Errorf("set sender failed: %w", err)
 	}
-
-	// Set recipient
-	if err = conn.Rcpt(to); err != nil {
+	if err = client.Rcpt(to); err != nil {
 		log.Printf("[EMAIL] ERROR setting recipient: %v", err)
-		return fmt.Errorf("failed to set recipient: %w", err)
+		return fmt.Errorf("set recipient failed: %w", err)
 	}
 
-	// Send message
-	w, err := conn.Data()
+	w, err := client.Data()
 	if err != nil {
 		log.Printf("[EMAIL] ERROR getting data writer: %v", err)
-		return fmt.Errorf("failed to get data writer: %w", err)
+		return fmt.Errorf("data command failed: %w", err)
 	}
 
 	_, err = w.Write(msg)
 	if err != nil {
 		log.Printf("[EMAIL] ERROR writing message: %v", err)
-		return fmt.Errorf("failed to write message: %w", err)
+		return fmt.Errorf("write message failed: %w", err)
 	}
 
 	err = w.Close()
 	if err != nil {
 		log.Printf("[EMAIL] ERROR closing writer: %v", err)
-		return fmt.Errorf("failed to close writer: %w", err)
+		return fmt.Errorf("close writer failed: %w", err)
 	}
 
-	conn.Quit()
-
-	log.Printf("[EMAIL] SUCCESS: Email sent to %s (via STARTTLS)", to)
+	client.Quit()
+	log.Printf("[EMAIL] SUCCESS: Email sent to %s via STARTTLS", to)
 	return nil
 }
 

@@ -67,10 +67,12 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	}
 
 	emailBody := "Your verification code is: " + code
-	err = utils.SendEmail(user.Email, "Email Verification", emailBody)
-	if err != nil {
-		log.Println("[EMAIL] FAILED:", err)
-	}
+	go func() {
+		err := utils.SendEmail(user.Email, "Email Verification", emailBody)
+		if err != nil {
+			log.Println("[EMAIL] FAILED:", err)
+		}
+	}()
 
 	return user, nil
 }
