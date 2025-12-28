@@ -15,12 +15,19 @@ func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 	{
 		// Public routes
 		courses.GET("", courseHandler.GetAllCoursesHandler)
-		courses.GET("/:id", courseHandler.GetCourseByIDHandler)
-		courses.GET("/program/:programId", courseHandler.GetCoursesByProgramIDHandler)
 
 		// Admin only routes
 		courses.POST("", requireAuth, requireAdmin, courseHandler.CreateCourseHandler)
-		courses.PUT("/:id", requireAuth, requireAdmin, courseHandler.UpdateCourseHandler)
-		courses.DELETE("/:id", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
 	}
+
+	// Routes with :id parameter - separate group to avoid conflicts
+	courseByID := router.Group("/courses")
+	{
+		courseByID.GET("/:id", courseHandler.GetCourseByIDHandler)
+		courseByID.PUT("/:id", requireAuth, requireAdmin, courseHandler.UpdateCourseHandler)
+		courseByID.DELETE("/:id", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
+	}
+
+	// Routes by program - use different path to avoid conflict
+	router.GET("/programs/:programId/courses", courseHandler.GetCoursesByProgramIDHandler)
 }

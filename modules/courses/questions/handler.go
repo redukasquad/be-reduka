@@ -47,10 +47,10 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-// GetQuestionsByCourseHandler handles GET /courses/:courseId/questions
+// GetQuestionsByCourseHandler handles GET /courses/:id/questions
 func (h *handler) GetQuestionsByCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
-	courseIDStr := c.Param("courseId")
+	courseIDStr := c.Param("id")
 
 	courseID, err := strconv.ParseUint(courseIDStr, 10, 32)
 	if err != nil {
@@ -67,11 +67,11 @@ func (h *handler) GetQuestionsByCourseHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Questions retrieved successfully", questions))
 }
 
-// CreateQuestionHandler handles POST /courses/:courseId/questions
+// CreateQuestionHandler handles POST /courses/:id/questions
 func (h *handler) CreateQuestionHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
-	courseIDStr := c.Param("courseId")
+	courseIDStr := c.Param("id")
 
 	courseID, err := strconv.ParseUint(courseIDStr, 10, 32)
 	if err != nil {

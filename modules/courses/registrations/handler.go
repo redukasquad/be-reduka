@@ -48,11 +48,11 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-// RegisterHandler handles POST /courses/:courseId/register
+// RegisterHandler handles POST /courses/:id/register
 func (h *handler) RegisterHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
-	courseIDStr := c.Param("courseId")
+	courseIDStr := c.Param("id")
 
 	courseID, err := strconv.ParseUint(courseIDStr, 10, 32)
 	if err != nil {
@@ -93,10 +93,10 @@ func (h *handler) GetMyRegistrationsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Registrations retrieved successfully", registrations))
 }
 
-// GetRegistrationsByCourseHandler handles GET /courses/:courseId/registrations
+// GetRegistrationsByCourseHandler handles GET /courses/:id/registrations
 func (h *handler) GetRegistrationsByCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
-	courseIDStr := c.Param("courseId")
+	courseIDStr := c.Param("id")
 
 	courseID, err := strconv.ParseUint(courseIDStr, 10, 32)
 	if err != nil {

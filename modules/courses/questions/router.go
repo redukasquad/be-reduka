@@ -11,17 +11,11 @@ func QuestionRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requir
 	questionService := NewService(questionRepo)
 	questionHandler := NewHandler(questionService)
 
-	// Public routes - anyone can view questions for a course
-	courses := router.Group("/courses")
+	// Course-specific question routes - using :id consistently
+	courseQuestions := router.Group("/courses/:id")
 	{
-		courses.GET("/:courseId/questions", questionHandler.GetQuestionsByCourseHandler)
-	}
-
-	// Admin routes for managing questions
-	adminCourses := router.Group("/courses")
-	adminCourses.Use(requireAuth, requireAdmin)
-	{
-		adminCourses.POST("/:courseId/questions", questionHandler.CreateQuestionHandler)
+		courseQuestions.GET("/questions", questionHandler.GetQuestionsByCourseHandler)
+		courseQuestions.POST("/questions", requireAuth, requireAdmin, questionHandler.CreateQuestionHandler)
 	}
 
 	// Admin routes for individual question management
