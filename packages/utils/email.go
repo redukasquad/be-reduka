@@ -11,58 +11,77 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/google/uuid"
 )
 
-// PromailerRequest represents the request body for Promailer API
-type PromailerRequest struct {
-	MessageID string   `json:"messageId"`
-	SmtpID    string   `json:"smtpId,omitempty"`
-	To        []string `json:"to"`
-	Subject   string   `json:"subject"`
-	HTML      string   `json:"html"`
-	Text      string   `json:"text,omitempty"`
+// BrevoSender represents the sender in Brevo API
+type BrevoSender struct {
+	Email string `json:"email"`
+	Name  string `json:"name"`
 }
 
-// PromailerResponse represents the response from Promailer API
-type PromailerResponse struct {
-	Success bool   `json:"success"`
-	Message string `json:"message"`
-	Data    struct {
-		MessageID string `json:"messageId"`
-	} `json:"data"`
+// BrevoRecipient represents a recipient in Brevo API
+type BrevoRecipient struct {
+	Email string `json:"email"`
+}
+
+// BrevoRequest represents the request body for Brevo API
+type BrevoRequest struct {
+	Sender      BrevoSender      `json:"sender"`
+	To          []BrevoRecipient `json:"to"`
+	Subject     string           `json:"subject"`
+	HTMLContent string           `json:"htmlContent"`
+}
+
+// BrevoResponse represents the response from Brevo API
+type BrevoResponse struct {
+	MessageID string `json:"messageId"`
+	Code      string `json:"code"`
+	Message   string `json:"message"`
 }
 
 func SendEmail(to string, subject string, body string) error {
-	apiKey := os.Getenv("API_MAIL_KEY")
-	smtpID := os.Getenv("SMTP_CONNECTION_ID")
+	apiKey := os.Getenv("BREVO_API_KEY")
+	senderEmail := os.Getenv("BREVO_SENDER_EMAIL")
+	senderName := os.Getenv("BREVO_SENDER_NAME")
 
-	log.Printf("[EMAIL] Attempting to send email to: %s via Promailer", to)
-	log.Printf("[EMAIL] API_MAIL_KEY present: %v, length: %d", apiKey != "", len(apiKey))
-	log.Printf("[EMAIL] SMTP_CONNECTION_ID present: %v", smtpID != "")
+	// Default sender if not set
+	if senderEmail == "" {
+		senderEmail = "noreply@reduka.com"
+	}
+	if senderName == "" {
+		senderName = "Reduka"
+	}
+
+	log.Printf("[EMAIL] Attempting to send email to: %s via Brevo", to)
+	log.Printf("[EMAIL] BREVO_API_KEY present: %v, length: %d", apiKey != "", len(apiKey))
 
 	// Validate configuration
 	if apiKey == "" {
-		log.Printf("[EMAIL] ERROR: API_MAIL_KEY is not set")
-		return fmt.Errorf("API_MAIL_KEY is not set")
+		log.Printf("[EMAIL] ERROR: BREVO_API_KEY is not set")
+		return fmt.Errorf("BREVO_API_KEY is not set")
 	}
 
 	// Convert plain text body to HTML
-	htmlBody := fmt.Sprintf("<div style=\"font-family: Arial, sans-serif; padding: 20px;\">%s</div>", body)
+	htmlBody := fmt.Sprintf(`
+		<div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
+			<h2 style="color: #333;">Reduka</h2>
+			<p style="font-size: 16px; color: #555;">%s</p>
+			<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
+			<p style="font-size: 12px; color: #999;">This is an automated message, please do not reply.</p>
+		</div>
+	`, body)
 
-	// Build request body - to must be an array
-	reqBody := PromailerRequest{
-		MessageID: uuid.New().String(),
-		To:        []string{to},
-		Subject:   subject,
-		HTML:      htmlBody,
-		Text:      body,
-	}
-
-	// Add smtpId if available
-	if smtpID != "" {
-		reqBody.SmtpID = smtpID
+	// Build request body
+	reqBody := BrevoRequest{
+		Sender: BrevoSender{
+			Email: senderEmail,
+			Name:  senderName,
+		},
+		To: []BrevoRecipient{
+			{Email: to},
+		},
+		Subject:     subject,
+		HTMLContent: htmlBody,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
@@ -73,16 +92,17 @@ func SendEmail(to string, subject string, body string) error {
 
 	log.Printf("[EMAIL] Request body: %s", string(jsonBody))
 
-	// Create HTTP request
-	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/v1/messages/send", bytes.NewBuffer(jsonBody))
+	// Create HTTP request to Brevo API
+	req, err := http.NewRequest("POST", "https://api.brevo.com/v3/smtp/email", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Printf("[EMAIL] ERROR creating request: %v", err)
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Set headers
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+	// Set headers - Brevo uses api-key header
+	req.Header.Set("api-key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	// Send request with timeout
 	client := &http.Client{Timeout: 30 * time.Second}
@@ -102,21 +122,21 @@ func SendEmail(to string, subject string, body string) error {
 
 	log.Printf("[EMAIL] Response status: %d, body: %s", resp.StatusCode, string(respBody))
 
-	// Parse response
-	var promailerResp PromailerResponse
-	if err := json.Unmarshal(respBody, &promailerResp); err != nil {
-		log.Printf("[EMAIL] ERROR parsing response: %v, body: %s", err, string(respBody))
-		return fmt.Errorf("failed to parse response: %w", err)
+	// Check if successful (2xx status code)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		log.Printf("[EMAIL] SUCCESS: Email sent to %s via Brevo", to)
+		return nil
 	}
 
-	// Check if successful
-	if !promailerResp.Success {
-		log.Printf("[EMAIL] ERROR from Promailer: %s", promailerResp.Message)
-		return fmt.Errorf("Promailer error: %s", promailerResp.Message)
+	// Parse error response
+	var brevoResp BrevoResponse
+	if err := json.Unmarshal(respBody, &brevoResp); err != nil {
+		log.Printf("[EMAIL] ERROR parsing response: %v", err)
+		return fmt.Errorf("Brevo error: status %d", resp.StatusCode)
 	}
 
-	log.Printf("[EMAIL] SUCCESS: Email sent to %s via Promailer, messageId: %s", to, promailerResp.Data.MessageID)
-	return nil
+	log.Printf("[EMAIL] ERROR from Brevo: %s - %s", brevoResp.Code, brevoResp.Message)
+	return fmt.Errorf("Brevo error: %s - %s", brevoResp.Code, brevoResp.Message)
 }
 
 func GenerateVerificationCode() string {
