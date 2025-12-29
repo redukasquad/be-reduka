@@ -11,15 +11,18 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // PromailerRequest represents the request body for Promailer API
 type PromailerRequest struct {
-	SmtpID  string   `json:"smtpId,omitempty"`
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	HTML    string   `json:"html"`
-	Text    string   `json:"text,omitempty"`
+	MessageID string   `json:"messageId"`
+	SmtpID    string   `json:"smtpId,omitempty"`
+	To        []string `json:"to"`
+	Subject   string   `json:"subject"`
+	HTML      string   `json:"html"`
+	Text      string   `json:"text,omitempty"`
 }
 
 // PromailerResponse represents the response from Promailer API
@@ -50,10 +53,11 @@ func SendEmail(to string, subject string, body string) error {
 
 	// Build request body - to must be an array
 	reqBody := PromailerRequest{
-		To:      []string{to},
-		Subject: subject,
-		HTML:    htmlBody,
-		Text:    body,
+		MessageID: uuid.New().String(),
+		To:        []string{to},
+		Subject:   subject,
+		HTML:      htmlBody,
+		Text:      body,
 	}
 
 	// Add smtpId if available
