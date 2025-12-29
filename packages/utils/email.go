@@ -61,15 +61,8 @@ func SendEmail(to string, subject string, body string) error {
 		return fmt.Errorf("BREVO_API_KEY is not set")
 	}
 
-	// Convert plain text body to HTML
-	htmlBody := fmt.Sprintf(`
-		<div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto;">
-			<h2 style="color: #333;">Reduka</h2>
-			<p style="font-size: 16px; color: #555;">%s</p>
-			<hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;">
-			<p style="font-size: 12px; color: #999;">This is an automated message, please do not reply.</p>
-		</div>
-	`, body)
+	// Convert plain text body to simple HTML (Brevo requires htmlContent)
+	htmlBody := fmt.Sprintf("<p>%s</p>", body)
 
 	// Build request body
 	reqBody := BrevoRequest{
