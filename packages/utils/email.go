@@ -61,6 +61,8 @@ func SendEmail(to string, subject string, body string) error {
 		return fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	log.Printf("[EMAIL] Request body: %s", string(jsonBody))
+
 	// Create HTTP request
 	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/v1/messages/send", bytes.NewBuffer(jsonBody))
 	if err != nil {
