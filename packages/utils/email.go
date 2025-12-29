@@ -33,6 +33,7 @@ func SendEmail(to string, subject string, body string) error {
 	apiKey := os.Getenv("API_MAIL_KEY")
 
 	log.Printf("[EMAIL] Attempting to send email to: %s via Promailer API", to)
+	log.Printf("[EMAIL] API_MAIL_KEY present: %v, length: %d", apiKey != "", len(apiKey))
 
 	// Validate configuration
 	if apiKey == "" {
