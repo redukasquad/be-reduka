@@ -11,17 +11,15 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // PromailerRequest represents the request body for Promailer API
 type PromailerRequest struct {
-	MessageID        string `json:"messageId"`
-	SmtpConnectionID string `json:"smtpConnectionId"`
-	To               string `json:"to"`
-	Subject          string `json:"subject"`
-	HTML             string `json:"html"`
+	SmtpID  string   `json:"smtpId,omitempty"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	HTML    string   `json:"html"`
+	Text    string   `json:"text,omitempty"`
 }
 
 // PromailerResponse represents the response from Promailer API
@@ -35,32 +33,32 @@ type PromailerResponse struct {
 
 func SendEmail(to string, subject string, body string) error {
 	apiKey := os.Getenv("API_MAIL_KEY")
-	smtpConnectionID := os.Getenv("SMTP_CONNECTION_ID")
+	smtpID := os.Getenv("SMTP_CONNECTION_ID")
 
 	log.Printf("[EMAIL] Attempting to send email to: %s via Promailer API", to)
 	log.Printf("[EMAIL] API_MAIL_KEY present: %v, length: %d", apiKey != "", len(apiKey))
-	log.Printf("[EMAIL] SMTP_CONNECTION_ID present: %v", smtpConnectionID != "")
+	log.Printf("[EMAIL] SMTP_CONNECTION_ID present: %v", smtpID != "")
 
 	// Validate configuration
 	if apiKey == "" {
 		log.Printf("[EMAIL] ERROR: API_MAIL_KEY is not set")
 		return fmt.Errorf("API_MAIL_KEY is not set")
 	}
-	if smtpConnectionID == "" {
-		log.Printf("[EMAIL] ERROR: SMTP_CONNECTION_ID is not set")
-		return fmt.Errorf("SMTP_CONNECTION_ID is not set")
-	}
 
 	// Convert plain text body to HTML
 	htmlBody := fmt.Sprintf("<div style=\"font-family: Arial, sans-serif; padding: 20px;\">%s</div>", body)
 
-	// Build request body
+	// Build request body - to must be an array
 	reqBody := PromailerRequest{
-		MessageID:        uuid.New().String(),
-		SmtpConnectionID: smtpConnectionID,
-		To:               to,
-		Subject:          subject,
-		HTML:             htmlBody,
+		To:      []string{to},
+		Subject: subject,
+		HTML:    htmlBody,
+		Text:    body,
+	}
+
+	// Add smtpId if available
+	if smtpID != "" {
+		reqBody.SmtpID = smtpID
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
@@ -71,8 +69,8 @@ func SendEmail(to string, subject string, body string) error {
 
 	log.Printf("[EMAIL] Request body: %s", string(jsonBody))
 
-	// Create HTTP request
-	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/v1/messages/send", bytes.NewBuffer(jsonBody))
+	// Create HTTP request - using /api/send endpoint
+	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/send", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Printf("[EMAIL] ERROR creating request: %v", err)
 		return fmt.Errorf("failed to create request: %w", err)
@@ -97,6 +95,8 @@ func SendEmail(to string, subject string, body string) error {
 		log.Printf("[EMAIL] ERROR reading response: %v", err)
 		return fmt.Errorf("failed to read response: %w", err)
 	}
+
+	log.Printf("[EMAIL] Response status: %d, body: %s", resp.StatusCode, string(respBody))
 
 	// Parse response
 	var promailerResp PromailerResponse
