@@ -17,10 +17,11 @@ import (
 
 // PromailerRequest represents the request body for Promailer API
 type PromailerRequest struct {
-	MessageID string `json:"messageId"`
-	To        string `json:"to"`
-	Subject   string `json:"subject"`
-	HTML      string `json:"html"`
+	MessageID        string `json:"messageId"`
+	SmtpConnectionID string `json:"smtpConnectionId"`
+	To               string `json:"to"`
+	Subject          string `json:"subject"`
+	HTML             string `json:"html"`
 }
 
 // PromailerResponse represents the response from Promailer API
@@ -34,14 +35,20 @@ type PromailerResponse struct {
 
 func SendEmail(to string, subject string, body string) error {
 	apiKey := os.Getenv("API_MAIL_KEY")
+	smtpConnectionID := os.Getenv("SMTP_CONNECTION_ID")
 
 	log.Printf("[EMAIL] Attempting to send email to: %s via Promailer API", to)
 	log.Printf("[EMAIL] API_MAIL_KEY present: %v, length: %d", apiKey != "", len(apiKey))
+	log.Printf("[EMAIL] SMTP_CONNECTION_ID present: %v", smtpConnectionID != "")
 
 	// Validate configuration
 	if apiKey == "" {
 		log.Printf("[EMAIL] ERROR: API_MAIL_KEY is not set")
 		return fmt.Errorf("API_MAIL_KEY is not set")
+	}
+	if smtpConnectionID == "" {
+		log.Printf("[EMAIL] ERROR: SMTP_CONNECTION_ID is not set")
+		return fmt.Errorf("SMTP_CONNECTION_ID is not set")
 	}
 
 	// Convert plain text body to HTML
@@ -49,10 +56,11 @@ func SendEmail(to string, subject string, body string) error {
 
 	// Build request body
 	reqBody := PromailerRequest{
-		MessageID: uuid.New().String(),
-		To:        to,
-		Subject:   subject,
-		HTML:      htmlBody,
+		MessageID:        uuid.New().String(),
+		SmtpConnectionID: smtpConnectionID,
+		To:               to,
+		Subject:          subject,
+		HTML:             htmlBody,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
