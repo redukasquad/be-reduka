@@ -11,13 +11,16 @@ import (
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // PromailerRequest represents the request body for Promailer API
 type PromailerRequest struct {
-	To      string `json:"to"`
-	Subject string `json:"subject"`
-	HTML    string `json:"html"`
+	MessageID string `json:"messageId"`
+	To        string `json:"to"`
+	Subject   string `json:"subject"`
+	HTML      string `json:"html"`
 }
 
 // PromailerResponse represents the response from Promailer API
@@ -46,9 +49,10 @@ func SendEmail(to string, subject string, body string) error {
 
 	// Build request body
 	reqBody := PromailerRequest{
-		To:      to,
-		Subject: subject,
-		HTML:    htmlBody,
+		MessageID: uuid.New().String(),
+		To:        to,
+		Subject:   subject,
+		HTML:      htmlBody,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
