@@ -69,8 +69,8 @@ func SendEmail(to string, subject string, body string) error {
 
 	log.Printf("[EMAIL] Request body: %s", string(jsonBody))
 
-	// Create HTTP request - using /api/send endpoint
-	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/send", bytes.NewBuffer(jsonBody))
+	// Create HTTP request
+	req, err := http.NewRequest("POST", "https://mailserver.automationlounge.com/api/v1/messages/send", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		log.Printf("[EMAIL] ERROR creating request: %v", err)
 		return fmt.Errorf("failed to create request: %w", err)
