@@ -94,7 +94,7 @@ func (s *authService) VerifyEmail(email, code string) error {
 	}
 
 	user.IsVerified = true
-	user.VerificationCode = ""
+	user.VerificationCode = nil
 
 	return s.repo.Update(user)
 }
