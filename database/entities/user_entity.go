@@ -24,7 +24,7 @@ type User struct {
 
 	ProfileImage             string     `json:"profileImage" form:"profileImage"`
 	IsVerified               bool       `json:"isVerified" gorm:"default:false"`
-	VerificationCode         string     `json:"verificationCode,omitempty" gorm:"size:100;uniqueIndex"`
+	VerificationCode         *string    `json:"verificationCode,omitempty" gorm:"size:100"`
 	ResetPasswordToken       string     `json:"resetPasswordToken" gorm:"index"`
 	ResetPasswordTokenExpiry *time.Time `json:"resetPasswordTokenExpiry"`
 

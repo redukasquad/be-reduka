@@ -59,7 +59,8 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	if err != nil {
 		return user, err
 	}
-	user.VerificationCode = string(hashedCode)
+	hashedCodeStr := string(hashedCode)
+	user.VerificationCode = &hashedCodeStr
 
 	err = s.repo.Create(&user)
 	if err != nil {
@@ -88,7 +89,10 @@ func (s *authService) VerifyEmail(email, code string) error {
 	}
 
 	// Compare verification code with bcrypt hash
-	err = bcrypt.CompareHashAndPassword([]byte(user.VerificationCode), []byte(code))
+	if user.VerificationCode == nil {
+		return errors.New("invalid verification code")
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(*user.VerificationCode), []byte(code))
 	if err != nil {
 		return errors.New("invalid verification code")
 	}
@@ -115,7 +119,8 @@ func (s *authService) ResendVerificationCode(email string) error {
 	if err != nil {
 		return err
 	}
-	user.VerificationCode = string(hashedCode)
+	hashedCodeStr := string(hashedCode)
+	user.VerificationCode = &hashedCodeStr
 
 	if err := s.repo.Update(user); err != nil {
 		return err
