@@ -13,7 +13,6 @@ type registrationService struct {
 	repo Repository
 }
 
-// Service interface defines the business logic methods for registrations
 type Service interface {
 	Register(courseID uint, userID uint, input RegisterCourseInput, requestID string) (*RegistrationResponse, error)
 	GetMyRegistrations(userID uint, requestID string) ([]RegistrationResponse, error)
@@ -23,7 +22,6 @@ type Service interface {
 	RejectRegistration(id uint, requestID string, adminUserID uint) (*RegistrationResponse, error)
 }
 
-// NewService creates a new registration service
 func NewService(repo Repository) Service {
 	return &registrationService{repo: repo}
 }
@@ -33,7 +31,6 @@ func (s *registrationService) Register(courseID uint, userID uint, input Registe
 		"course_id": courseID,
 	})
 
-	// Check if user already registered for this course
 	existing, err := s.repo.FindByUserAndCourse(userID, courseID)
 	if err == nil && existing.ID != 0 {
 		utils.LogWarning("registrations", "register", "User already registered for this course", requestID, userID, map[string]any{
@@ -42,7 +39,6 @@ func (s *registrationService) Register(courseID uint, userID uint, input Registe
 		return nil, errors.New("you have already registered for this course")
 	}
 
-	// Create registration with pending status
 	registration := &entities.CourseRegistration{
 		UserID:   userID,
 		CourseID: courseID,
@@ -56,7 +52,6 @@ func (s *registrationService) Register(courseID uint, userID uint, input Registe
 		return nil, err
 	}
 
-	// Create answers if provided
 	if len(input.Answers) > 0 {
 		var answers []entities.RegistrationAnswer
 		for _, ans := range input.Answers {
@@ -71,7 +66,6 @@ func (s *registrationService) Register(courseID uint, userID uint, input Registe
 				"course_id":       courseID,
 				"registration_id": registration.ID,
 			})
-			// Don't fail the registration, just log the error
 		}
 	}
 
@@ -81,7 +75,6 @@ func (s *registrationService) Register(courseID uint, userID uint, input Registe
 		"status":          "pending",
 	})
 
-	// Fetch the full registration with relations
 	fullReg, _ := s.repo.FindByID(registration.ID)
 	return s.toRegistrationResponse(fullReg, false), nil
 }
@@ -97,7 +90,6 @@ func (s *registrationService) GetMyRegistrations(userID uint, requestID string) 
 
 	var responses []RegistrationResponse
 	for _, reg := range registrations {
-		// Show WhatsApp link only if approved
 		showWhatsApp := reg.Status == "approved"
 		responses = append(responses, *s.toRegistrationResponse(reg, showWhatsApp))
 	}
@@ -123,7 +115,7 @@ func (s *registrationService) GetRegistrationsByCourse(courseID uint, requestID 
 
 	var responses []RegistrationResponse
 	for _, reg := range registrations {
-		responses = append(responses, *s.toRegistrationResponse(reg, true)) // Admin can see WhatsApp link
+		responses = append(responses, *s.toRegistrationResponse(reg, true))
 	}
 
 	utils.LogSuccess("registrations", "get_by_course", "Successfully fetched course registrations", requestID, 0, map[string]any{
@@ -193,7 +185,6 @@ func (s *registrationService) ApproveRegistration(id uint, requestID string, adm
 		"course_id":       registration.CourseID,
 	})
 
-	// Refetch to get updated relations
 	registration, _ = s.repo.FindByID(id)
 	return s.toRegistrationResponse(registration, true), nil
 }
@@ -236,12 +227,10 @@ func (s *registrationService) RejectRegistration(id uint, requestID string, admi
 		"course_id":       registration.CourseID,
 	})
 
-	// Refetch to get updated relations
 	registration, _ = s.repo.FindByID(id)
 	return s.toRegistrationResponse(registration, false), nil
 }
 
-// toRegistrationResponse converts entity to response DTO
 func (s *registrationService) toRegistrationResponse(reg entities.CourseRegistration, showWhatsApp bool) *RegistrationResponse {
 	response := &RegistrationResponse{
 		ID:        reg.ID,
@@ -251,7 +240,6 @@ func (s *registrationService) toRegistrationResponse(reg entities.CourseRegistra
 		CreatedAt: reg.CreatedAt.Format(time.RFC3339),
 	}
 
-	// Add course info if loaded
 	if reg.Course.ID != 0 {
 		response.CourseName = reg.Course.NameCourse
 		if showWhatsApp {
@@ -262,13 +250,11 @@ func (s *registrationService) toRegistrationResponse(reg entities.CourseRegistra
 		}
 	}
 
-	// Add user info if loaded
 	if reg.User.ID != 0 {
 		response.UserName = reg.User.Username
 		response.UserEmail = reg.User.Email
 	}
 
-	// Add answers if loaded
 	if len(reg.Answers) > 0 {
 		for _, ans := range reg.Answers {
 			response.Answers = append(response.Answers, AnswerResponse{

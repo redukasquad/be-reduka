@@ -9,7 +9,6 @@ type repository struct {
 	db *gorm.DB
 }
 
-// Repository interface defines the methods for registration data access
 type Repository interface {
 	FindByID(id uint) (entities.CourseRegistration, error)
 	FindByUserID(userID uint) ([]entities.CourseRegistration, error)
@@ -21,7 +20,6 @@ type Repository interface {
 	CreateAnswers(answers []entities.RegistrationAnswer) error
 }
 
-// NewRepository creates a new registration repository
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }

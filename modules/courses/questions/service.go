@@ -12,7 +12,6 @@ type questionService struct {
 	repo Repository
 }
 
-// Service interface defines the business logic methods for questions
 type Service interface {
 	GetByCourseID(courseID uint, requestID string) ([]QuestionResponse, error)
 	Create(courseID uint, input CreateQuestionInput, requestID string, userID uint) (*QuestionResponse, error)
@@ -20,7 +19,6 @@ type Service interface {
 	Delete(id uint, requestID string, userID uint) error
 }
 
-// NewService creates a new question service
 func NewService(repo Repository) Service {
 	return &questionService{repo: repo}
 }
@@ -32,9 +30,7 @@ func (s *questionService) GetByCourseID(courseID uint, requestID string) ([]Ques
 
 	questions, err := s.repo.FindByCourseID(courseID)
 	if err != nil {
-		utils.LogError("questions", "get_by_course", "Failed to fetch questions: "+err.Error(), requestID, 0, map[string]any{
-			"course_id": courseID,
-		})
+		utils.LogError("questions", "get_by_course", "Failed to fetch questions: "+err.Error(), requestID, 0, nil)
 		return nil, err
 	}
 
@@ -52,7 +48,8 @@ func (s *questionService) GetByCourseID(courseID uint, requestID string) ([]Ques
 
 func (s *questionService) Create(courseID uint, input CreateQuestionInput, requestID string, userID uint) (*QuestionResponse, error) {
 	utils.LogInfo("questions", "create", "Creating new question", requestID, userID, map[string]any{
-		"course_id": courseID,
+		"course_id":     courseID,
+		"question_text": input.QuestionText,
 	})
 
 	question := &entities.RegistrationQuestion{
@@ -63,14 +60,11 @@ func (s *questionService) Create(courseID uint, input CreateQuestionInput, reque
 	}
 
 	if err := s.repo.Create(question); err != nil {
-		utils.LogError("questions", "create", "Failed to create question: "+err.Error(), requestID, userID, map[string]any{
-			"course_id": courseID,
-		})
+		utils.LogError("questions", "create", "Failed to create question: "+err.Error(), requestID, userID, nil)
 		return nil, err
 	}
 
 	utils.LogSuccess("questions", "create", "Question created successfully", requestID, userID, map[string]any{
-		"course_id":   courseID,
 		"question_id": question.ID,
 	})
 
@@ -105,9 +99,7 @@ func (s *questionService) Update(id uint, input UpdateQuestionInput, requestID s
 	}
 
 	if err := s.repo.Update(&question); err != nil {
-		utils.LogError("questions", "update", "Failed to update question: "+err.Error(), requestID, userID, map[string]any{
-			"question_id": id,
-		})
+		utils.LogError("questions", "update", "Failed to update question: "+err.Error(), requestID, userID, nil)
 		return nil, err
 	}
 
@@ -136,9 +128,7 @@ func (s *questionService) Delete(id uint, requestID string, userID uint) error {
 	}
 
 	if err := s.repo.Delete(id); err != nil {
-		utils.LogError("questions", "delete", "Failed to delete question: "+err.Error(), requestID, userID, map[string]any{
-			"question_id": id,
-		})
+		utils.LogError("questions", "delete", "Failed to delete question: "+err.Error(), requestID, userID, nil)
 		return err
 	}
 

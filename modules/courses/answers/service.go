@@ -9,12 +9,10 @@ type answerService struct {
 	repo Repository
 }
 
-// Service interface defines the business logic methods for answers
 type Service interface {
 	GetByRegistrationID(registrationID uint, requestID string) ([]AnswerResponse, error)
 }
 
-// NewService creates a new answer service
 func NewService(repo Repository) Service {
 	return &answerService{repo: repo}
 }

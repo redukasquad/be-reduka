@@ -13,17 +13,14 @@ type handler struct {
 	service Service
 }
 
-// Handler interface defines the HTTP handlers for answers
 type Handler interface {
 	GetAnswersByRegistrationHandler(c *gin.Context)
 }
 
-// NewHandler creates a new answer handler
 func NewHandler(service Service) Handler {
 	return &handler{service: service}
 }
 
-// getRequestID gets or generates a request ID from context
 func getRequestID(c *gin.Context) string {
 	requestID := c.GetHeader("X-Request-ID")
 	if requestID == "" {
@@ -32,7 +29,6 @@ func getRequestID(c *gin.Context) string {
 	return requestID
 }
 
-// GetAnswersByRegistrationHandler handles GET /registrations/:registrationId/answers
 func (h *handler) GetAnswersByRegistrationHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	registrationIDStr := c.Param("registrationId")

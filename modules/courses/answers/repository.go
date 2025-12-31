@@ -9,12 +9,10 @@ type repository struct {
 	db *gorm.DB
 }
 
-// Repository interface defines the methods for answer data access
 type Repository interface {
 	FindByRegistrationID(registrationID uint) ([]entities.RegistrationAnswer, error)
 }
 
-// NewRepository creates a new answer repository
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }

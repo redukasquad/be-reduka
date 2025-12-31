@@ -5,7 +5,6 @@ import (
 	"github.com/redukasquad/be-reduka/database/migrations"
 )
 
-// CourseIndexRouter registers all course index routes
 func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
 	courseRepo := NewRepository(migrations.GetDB())
 	courseService := NewService(courseRepo)
@@ -13,14 +12,10 @@ func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 
 	courses := router.Group("/courses")
 	{
-		// Public routes
 		courses.GET("", courseHandler.GetAllCoursesHandler)
-
-		// Admin only routes
 		courses.POST("", requireAuth, requireAdmin, courseHandler.CreateCourseHandler)
 	}
 
-	// Routes with :id parameter - separate group to avoid conflicts
 	courseByID := router.Group("/courses")
 	{
 		courseByID.GET("/:id", courseHandler.GetCourseByIDHandler)
@@ -28,6 +23,5 @@ func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 		courseByID.DELETE("/:id", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
 	}
 
-	// Routes by program - nested under programs to align with programs module
 	router.GET("/programs/:id/courses", courseHandler.GetCoursesByProgramIDHandler)
 }

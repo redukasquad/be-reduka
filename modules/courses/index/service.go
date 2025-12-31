@@ -12,7 +12,6 @@ type courseService struct {
 	repo Repository
 }
 
-// Service interface defines the business logic methods for courses
 type Service interface {
 	GetAll(requestID string) ([]entities.Course, error)
 	GetByID(id uint, requestID string) (*entities.Course, error)
@@ -22,7 +21,6 @@ type Service interface {
 	Delete(id uint, requestID string, userID uint) error
 }
 
-// NewService creates a new course service
 func NewService(repo Repository) Service {
 	return &courseService{repo: repo}
 }
@@ -94,7 +92,6 @@ func (s *courseService) Create(input CreateCourseInput, requestID string, userID
 		"program_id":  input.ProgramID,
 	})
 
-	// Check if course with same name already exists
 	_, err := s.repo.FindByName(input.NameCourse)
 	if err == nil {
 		utils.LogWarning("courses", "create", "Course with this name already exists", requestID, userID, map[string]any{
@@ -147,12 +144,10 @@ func (s *courseService) Update(id uint, input UpdateCourseInput, requestID strin
 		return nil, err
 	}
 
-	// Update only provided fields
 	if input.ProgramID != nil {
 		course.ProgramID = *input.ProgramID
 	}
 	if input.NameCourse != nil {
-		// Check if new name already exists (if different from current)
 		if *input.NameCourse != course.NameCourse {
 			existing, _ := s.repo.FindByName(*input.NameCourse)
 			if existing.ID != 0 {

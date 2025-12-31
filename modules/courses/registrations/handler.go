@@ -13,7 +13,6 @@ type handler struct {
 	service Service
 }
 
-// Handler interface defines the HTTP handlers for registrations
 type Handler interface {
 	RegisterHandler(c *gin.Context)
 	GetMyRegistrationsHandler(c *gin.Context)
@@ -22,12 +21,10 @@ type Handler interface {
 	RejectRegistrationHandler(c *gin.Context)
 }
 
-// NewHandler creates a new registration handler
 func NewHandler(service Service) Handler {
 	return &handler{service: service}
 }
 
-// getRequestID gets or generates a request ID from context
 func getRequestID(c *gin.Context) string {
 	requestID := c.GetHeader("X-Request-ID")
 	if requestID == "" {
@@ -36,11 +33,13 @@ func getRequestID(c *gin.Context) string {
 	return requestID
 }
 
-// getUserID gets the user ID from context (set by auth middleware)
 func getUserID(c *gin.Context) uint {
 	userID, exists := c.Get("user_id")
 	if !exists {
 		return 0
+	}
+	if id, ok := userID.(int); ok {
+		return uint(id)
 	}
 	if id, ok := userID.(uint); ok {
 		return id
@@ -48,7 +47,6 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-// RegisterHandler handles POST /courses/:id/register
 func (h *handler) RegisterHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -62,7 +60,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 
 	var input RegisterCourseInput
 	if err := c.ShouldBindJSON(&input); err != nil {
-		// Allow empty body for courses without questions
 		input = RegisterCourseInput{Answers: []AnswerInput{}}
 	}
 
@@ -79,7 +76,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("Registration submitted successfully. Please wait for admin approval.", registration))
 }
 
-// GetMyRegistrationsHandler handles GET /courses/registrations/me
 func (h *handler) GetMyRegistrationsHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -93,7 +89,6 @@ func (h *handler) GetMyRegistrationsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Registrations retrieved successfully", registrations))
 }
 
-// GetRegistrationsByCourseHandler handles GET /courses/:id/registrations
 func (h *handler) GetRegistrationsByCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	courseIDStr := c.Param("id")
@@ -113,7 +108,6 @@ func (h *handler) GetRegistrationsByCourseHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Registrations retrieved successfully", registrations))
 }
 
-// ApproveRegistrationHandler handles PUT /registrations/:id/approve
 func (h *handler) ApproveRegistrationHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -142,7 +136,6 @@ func (h *handler) ApproveRegistrationHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Registration approved successfully", registration))
 }
 
-// RejectRegistrationHandler handles PUT /registrations/:id/reject
 func (h *handler) RejectRegistrationHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)

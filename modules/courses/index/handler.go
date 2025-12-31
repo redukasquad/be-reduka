@@ -13,7 +13,6 @@ type handler struct {
 	service Service
 }
 
-// Handler interface defines the HTTP handlers for courses
 type Handler interface {
 	GetAllCoursesHandler(c *gin.Context)
 	GetCourseByIDHandler(c *gin.Context)
@@ -23,12 +22,10 @@ type Handler interface {
 	DeleteCourseHandler(c *gin.Context)
 }
 
-// NewHandler creates a new course handler
 func NewHandler(service Service) Handler {
 	return &handler{service: service}
 }
 
-// getRequestID gets or generates a request ID from context
 func getRequestID(c *gin.Context) string {
 	requestID := c.GetHeader("X-Request-ID")
 	if requestID == "" {
@@ -37,7 +34,6 @@ func getRequestID(c *gin.Context) string {
 	return requestID
 }
 
-// getUserID gets the user ID from context (set by auth middleware)
 func getUserID(c *gin.Context) uint {
 	userID, exists := c.Get("user_id")
 	if !exists {
@@ -49,7 +45,6 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-// GetAllCoursesHandler handles GET /courses
 func (h *handler) GetAllCoursesHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 
@@ -62,7 +57,6 @@ func (h *handler) GetAllCoursesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Courses retrieved successfully", courses))
 }
 
-// GetCourseByIDHandler handles GET /courses/:id
 func (h *handler) GetCourseByIDHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	idStr := c.Param("id")
@@ -86,7 +80,6 @@ func (h *handler) GetCourseByIDHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Course retrieved successfully", course))
 }
 
-// GetCoursesByProgramIDHandler handles GET /programs/:id/courses
 func (h *handler) GetCoursesByProgramIDHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	programIDStr := c.Param("id")
@@ -106,7 +99,6 @@ func (h *handler) GetCoursesByProgramIDHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Courses retrieved successfully", courses))
 }
 
-// CreateCourseHandler handles POST /courses
 func (h *handler) CreateCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -130,7 +122,6 @@ func (h *handler) CreateCourseHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("Course created successfully", course))
 }
 
-// UpdateCourseHandler handles PUT /courses/:id
 func (h *handler) UpdateCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -165,7 +156,6 @@ func (h *handler) UpdateCourseHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Course updated successfully", course))
 }
 
-// DeleteCourseHandler handles DELETE /courses/:id
 func (h *handler) DeleteCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)

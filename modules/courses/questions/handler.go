@@ -13,7 +13,6 @@ type handler struct {
 	service Service
 }
 
-// Handler interface defines the HTTP handlers for questions
 type Handler interface {
 	GetQuestionsByCourseHandler(c *gin.Context)
 	CreateQuestionHandler(c *gin.Context)
@@ -21,12 +20,10 @@ type Handler interface {
 	DeleteQuestionHandler(c *gin.Context)
 }
 
-// NewHandler creates a new question handler
 func NewHandler(service Service) Handler {
 	return &handler{service: service}
 }
 
-// getRequestID gets or generates a request ID from context
 func getRequestID(c *gin.Context) string {
 	requestID := c.GetHeader("X-Request-ID")
 	if requestID == "" {
@@ -35,11 +32,13 @@ func getRequestID(c *gin.Context) string {
 	return requestID
 }
 
-// getUserID gets the user ID from context (set by auth middleware)
 func getUserID(c *gin.Context) uint {
 	userID, exists := c.Get("user_id")
 	if !exists {
 		return 0
+	}
+	if id, ok := userID.(int); ok {
+		return uint(id)
 	}
 	if id, ok := userID.(uint); ok {
 		return id
@@ -47,7 +46,6 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-// GetQuestionsByCourseHandler handles GET /courses/:id/questions
 func (h *handler) GetQuestionsByCourseHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	courseIDStr := c.Param("id")
@@ -67,7 +65,6 @@ func (h *handler) GetQuestionsByCourseHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Questions retrieved successfully", questions))
 }
 
-// CreateQuestionHandler handles POST /courses/:id/questions
 func (h *handler) CreateQuestionHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -94,7 +91,6 @@ func (h *handler) CreateQuestionHandler(c *gin.Context) {
 	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("Question created successfully", question))
 }
 
-// UpdateQuestionHandler handles PUT /questions/:id
 func (h *handler) UpdateQuestionHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
@@ -125,7 +121,6 @@ func (h *handler) UpdateQuestionHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Question updated successfully", question))
 }
 
-// DeleteQuestionHandler handles DELETE /questions/:id
 func (h *handler) DeleteQuestionHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)

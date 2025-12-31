@@ -9,18 +9,9 @@ import (
 	"github.com/redukasquad/be-reduka/modules/courses/registrations"
 )
 
-// CoursesRouter registers all course-related routes
-// This combines all sub-module routers: index, registrations, questions, answers
 func CoursesRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
-	// Course CRUD routes
 	courses.CourseIndexRouter(router, requireAuth, requireAdmin)
-
-	// Registration routes (user registration, admin approval/rejection)
 	registrations.RegistrationRouter(router, requireAuth, requireAdmin)
-
-	// Question routes (registration form questions)
 	questions.QuestionRouter(router, requireAuth, requireAdmin)
-
-	// Answer routes (view registration answers)
 	answers.AnswerRouter(router, requireAuth, requireAdmin)
 }

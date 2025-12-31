@@ -9,7 +9,6 @@ type repository struct {
 	db *gorm.DB
 }
 
-// Repository interface defines the methods for course data access
 type Repository interface {
 	FindAll() ([]entities.Course, error)
 	FindByID(id uint) (entities.Course, error)
@@ -21,7 +20,6 @@ type Repository interface {
 	Count() (int64, error)
 }
 
-// NewRepository creates a new course repository
 func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }

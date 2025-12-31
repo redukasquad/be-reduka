@@ -1,6 +1,5 @@
 package answers
 
-// AnswerResponse is the response format for a registration answer
 type AnswerResponse struct {
 	ID             uint   `json:"id"`
 	RegistrationID uint   `json:"registrationId"`
@@ -9,7 +8,6 @@ type AnswerResponse struct {
 	AnswerText     string `json:"answerText"`
 }
 
-// AnswerListResponse is the response for listing answers
 type AnswerListResponse struct {
 	Answers []AnswerResponse `json:"answers"`
 }
