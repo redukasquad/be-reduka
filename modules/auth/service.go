@@ -54,7 +54,6 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 		return user, errors.New("email already registered")
 	}
 	code := utils.GenerateVerificationCode()
-	// Hash verification code before saving to database
 	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
 	if err != nil {
 		return user, err
@@ -88,7 +87,6 @@ func (s *authService) VerifyEmail(email, code string) error {
 		return errors.New("email already verified")
 	}
 
-	// Compare verification code with bcrypt hash
 	if user.VerificationCode == nil {
 		return errors.New("invalid verification code")
 	}
@@ -113,7 +111,6 @@ func (s *authService) ResendVerificationCode(email string) error {
 		return errors.New("email already verified")
 	}
 
-	// Generate new verification code and hash it
 	code := utils.GenerateVerificationCode()
 	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
 	if err != nil {
@@ -126,7 +123,6 @@ func (s *authService) ResendVerificationCode(email string) error {
 		return err
 	}
 
-	// Send verification email
 	emailBody := `
 		<h2>Email Verification</h2>
 		<p>Your verification code is: <strong>` + code + `</strong></p>
@@ -146,7 +142,6 @@ func (s *authService) Login(input LoginInput) (string, error) {
 		return "", errors.New("invalid email or password")
 	}
 
-	// Check if user registered with Google
 	if user.AuthProvider == "GOOGLE" {
 		return "", errors.New("this account uses Google login")
 	}
@@ -156,7 +151,6 @@ func (s *authService) Login(input LoginInput) (string, error) {
 		return "", errors.New("invalid email or password")
 	}
 
-	// Check if email is verified
 	if !user.IsVerified {
 		return "", errors.New("email not verified")
 	}
@@ -230,7 +224,6 @@ func (s *authService) ResetPassword(input ResetPasswordInput) error {
 func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo) (*entities.User, string, error) {
 	user, err := s.repo.FindByEmail(googleUserInfo.Email)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		// New user - register with Google
 		defaultRole := "STUDENT"
 		newUser := &entities.User{
 			Username:     googleUserInfo.Name,
@@ -247,7 +240,6 @@ func (s *authService) LoginOrRegisterWithGoogle(googleUserInfo *oauth2.Userinfo)
 	} else if err != nil {
 		return nil, "", err
 	} else {
-		// Existing user - check if they registered with password
 		if user.AuthProvider == "PASSWORD" {
 			return nil, "", errors.New("this account uses password login")
 		}

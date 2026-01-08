@@ -1,5 +1,22 @@
 package auth
 
+import "github.com/redukasquad/be-reduka/database/entities"
+
+func UserResponseJSON(user entities.User) UserResponse {
+	return UserResponse{
+		ID:           user.ID,
+		Username:     user.Username,
+		Email:        user.Email,
+		NoTelp:       user.NoTelp,
+		JenisKelamin: user.JenisKelamin,
+		Kelas:        user.Kelas,
+		Role:         user.Role,
+		AuthProvider: user.AuthProvider,
+		ProfileImage: user.ProfileImage,
+		IsVerified:   user.IsVerified,
+	}
+}
+
 type RegisterInput struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email" binding:"required,email"`
@@ -28,4 +45,17 @@ type ResendVerificationInput struct {
 type VerifyEmailInput struct {
 	Email string `json:"email" binding:"required,email"`
 	Code  string `json:"code" binding:"required"`
+}
+
+type UserResponse struct {
+	ID           uint    `json:"id"`
+	Username     string  `json:"username"`
+	Email        string  `json:"email"`
+	NoTelp       string  `json:"noTelp,omitempty"`
+	JenisKelamin *bool   `json:"jenisKelamin,omitempty"`
+	Kelas        *string `json:"kelas,omitempty"`
+	Role         *string `json:"role,omitempty"`
+	AuthProvider string  `json:"authProvider"`
+	ProfileImage string  `json:"profileImage,omitempty"`
+	IsVerified   bool    `json:"isVerified"`
 }

@@ -40,15 +40,12 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 	var input RegisterInput
 	var validationErrors []utils.ValidationError
 
-	// Use strict JSON decoding to reject unknown fields
 	decoder := json.NewDecoder(c.Request.Body)
 	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(&input); err != nil {
-		// Check if it's an unknown field error
 		errStr := err.Error()
 		if strings.Contains(errStr, "unknown field") {
-			// Extract field name from error message
 			fieldName := strings.TrimPrefix(errStr, "json: unknown field ")
 			fieldName = strings.Trim(fieldName, "\"")
 			validationErrors = append(validationErrors, utils.ValidationError{
@@ -62,7 +59,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	// Validate required fields
 	if input.Username == "" {
 		validationErrors = append(validationErrors, utils.ValidationError{
 			Field: "username",
@@ -82,7 +78,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		})
 	}
 
-	// Validate email format (basic check)
 	if input.Email != "" && !strings.Contains(input.Email, "@") {
 		validationErrors = append(validationErrors, utils.ValidationError{
 			Field: "email",
@@ -90,7 +85,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		})
 	}
 
-	// Validate password length
 	if input.Password != "" && len(input.Password) < 6 {
 		validationErrors = append(validationErrors, utils.ValidationError{
 			Field: "password",
@@ -98,7 +92,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		})
 	}
 
-	// Return all validation errors at once
 	if len(validationErrors) > 0 {
 		c.JSON(http.StatusBadRequest, utils.BuildValidationErrorResponse("Validation failed", validationErrors))
 		return
@@ -106,7 +99,6 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 
 	user, err := h.service.Register(input)
 	if err != nil {
-		// Handle specific errors
 		if strings.Contains(err.Error(), "email already registered") {
 			validationErrors = append(validationErrors, utils.ValidationError{
 				Field: "email",
@@ -119,7 +111,7 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("User registered successfully", user))
+	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("User registered successfully", UserResponseJSON(user)))
 }
 
 func (h *handler) LoginHandler(c *gin.Context) {
@@ -142,17 +134,14 @@ func (h *handler) LoginHandler(c *gin.Context) {
 
 	token, err := h.service.Login(input)
 	if err != nil {
-		// Handle email not verified error
 		if strings.Contains(err.Error(), "email not verified") {
 			c.JSON(http.StatusForbidden, utils.BuildResponseFailed("Email not verified", "Please verify your email before logging in. Use POST /api/v1/auth/resend-verification to get a new code.", nil))
 			return
 		}
-		// Handle user registered with Google
 		if strings.Contains(err.Error(), "this account uses Google login") {
 			c.JSON(http.StatusForbidden, utils.BuildResponseFailed("Wrong login method", "This account was registered with Google. Please use Google login instead.", nil))
 			return
 		}
-		// Handle invalid credentials
 		if strings.Contains(err.Error(), "invalid email or password") {
 			validationErrors := []utils.ValidationError{
 				{Field: "email", Error: "invalid email or password"},
@@ -300,7 +289,7 @@ func (h *handler) GoogleLoginHandler(c *gin.Context) {
 func (h *handler) GoogleCallbackHandler(c *gin.Context) {
 	frontendURL := os.Getenv("FRONTEND_URL")
 	if frontendURL == "" {
-		frontendURL = "http://localhost:3000" // default frontend URL
+		frontendURL = "http://localhost:3000"
 	}
 
 	if errParam := c.Query("error"); errParam != "" {
@@ -340,12 +329,10 @@ func (h *handler) GoogleCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	// Redirect to frontend success page with token
 	c.Redirect(http.StatusTemporaryRedirect, frontendURL+"/auth/google/success?token="+jwtToken)
 }
 
 func (h *handler) MeHandler(c *gin.Context) {
-	// Get user_id from context (set by middleware)
 	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, utils.BuildResponseFailed("Unauthorized", "User ID not found in context", nil))
@@ -358,5 +345,5 @@ func (h *handler) MeHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.BuildResponseSuccess("User Profile", user))
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("User Profile", UserResponseJSON(*user)))
 }
