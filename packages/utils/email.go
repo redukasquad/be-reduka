@@ -13,18 +13,15 @@ import (
 	"time"
 )
 
-// BrevoSender represents the sender in Brevo API
 type BrevoSender struct {
 	Email string `json:"email"`
 	Name  string `json:"name"`
 }
 
-// BrevoRecipient represents a recipient in Brevo API
 type BrevoRecipient struct {
 	Email string `json:"email"`
 }
 
-// BrevoRequest represents the request body for Brevo API
 type BrevoRequest struct {
 	Sender      BrevoSender      `json:"sender"`
 	To          []BrevoRecipient `json:"to"`
@@ -32,7 +29,6 @@ type BrevoRequest struct {
 	HTMLContent string           `json:"htmlContent"`
 }
 
-// BrevoResponse represents the response from Brevo API
 type BrevoResponse struct {
 	MessageID string `json:"messageId"`
 	Code      string `json:"code"`
@@ -44,7 +40,6 @@ func SendEmail(to string, subject string, body string) error {
 	senderEmail := os.Getenv("BREVO_SENDER_EMAIL")
 	senderName := os.Getenv("BREVO_SENDER_NAME")
 
-	// Default sender if not set
 	if senderEmail == "" {
 		senderEmail = "noreply@reduka.com"
 	}
@@ -55,16 +50,13 @@ func SendEmail(to string, subject string, body string) error {
 	log.Printf("[EMAIL] Attempting to send email to: %s via Brevo", to)
 	log.Printf("[EMAIL] BREVO_API_KEY present: %v, length: %d", apiKey != "", len(apiKey))
 
-	// Validate configuration
 	if apiKey == "" {
 		log.Printf("[EMAIL] ERROR: BREVO_API_KEY is not set")
 		return fmt.Errorf("BREVO_API_KEY is not set")
 	}
 
-	// Convert plain text body to simple HTML (Brevo requires htmlContent)
 	htmlBody := fmt.Sprintf("<p>%s</p>", body)
 
-	// Build request body
 	reqBody := BrevoRequest{
 		Sender: BrevoSender{
 			Email: senderEmail,
@@ -92,12 +84,10 @@ func SendEmail(to string, subject string, body string) error {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// Set headers - Brevo uses api-key header
 	req.Header.Set("api-key", apiKey)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
 
-	// Send request with timeout
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -106,7 +96,6 @@ func SendEmail(to string, subject string, body string) error {
 	}
 	defer resp.Body.Close()
 
-	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("[EMAIL] ERROR reading response: %v", err)
@@ -115,13 +104,11 @@ func SendEmail(to string, subject string, body string) error {
 
 	log.Printf("[EMAIL] Response status: %d, body: %s", resp.StatusCode, string(respBody))
 
-	// Check if successful (2xx status code)
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		log.Printf("[EMAIL] SUCCESS: Email sent to %s via Brevo", to)
 		return nil
 	}
 
-	// Parse error response
 	var brevoResp BrevoResponse
 	if err := json.Unmarshal(respBody, &brevoResp); err != nil {
 		log.Printf("[EMAIL] ERROR parsing response: %v", err)

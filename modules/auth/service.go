@@ -44,7 +44,7 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 		IsVerified:   false,
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return user, err
 	}
@@ -54,7 +54,7 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 		return user, errors.New("email already registered")
 	}
 	code := utils.GenerateVerificationCode()
-	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
+	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
 	if err != nil {
 		return user, err
 	}
@@ -112,7 +112,7 @@ func (s *authService) ResendVerificationCode(email string) error {
 	}
 
 	code := utils.GenerateVerificationCode()
-	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.MinCost)
+	hashedCode, err := bcrypt.GenerateFromPassword([]byte(code), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func (s *authService) ResetPassword(input ResetPasswordInput) error {
 		return errors.New("token expired")
 	}
 
-	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.MinCost)
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
 	}
