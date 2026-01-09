@@ -20,14 +20,10 @@ import (
 	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
-// getAllowedOrigins returns CORS allowed origins from environment
 func getAllowedOrigins() []string {
-	// Default development origins
 	origins := []string{"http://localhost:3000", "http://localhost:5173"}
 
-	// Add production frontend URL if set
 	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
-		// Support multiple URLs separated by comma
 		for _, url := range strings.Split(frontendURL, ",") {
 			url = strings.TrimSpace(url)
 			if url != "" && url != "http://localhost:3000" && url != "http://localhost:5173" {
@@ -40,8 +36,6 @@ func getAllowedOrigins() []string {
 }
 
 func main() {
-	// Load .env file if exists (for local development)
-	// In production, environment variables are set directly
 	if os.Getenv("APP_ENV") != "production" {
 		if err := godotenv.Load(); err != nil {
 			log.Println("No .env file found")
@@ -53,7 +47,6 @@ func main() {
 	utils.InitLogger()
 	r := gin.Default()
 
-	// CORS configuration with dynamic origins
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     getAllowedOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
@@ -66,7 +59,6 @@ func main() {
 	api := r.Group("/api")
 	v1 := api.Group("/v1")
 	{
-		// Health check endpoint (no auth required)
 		health.HealthRouter(v1)
 
 		auth.AuthRouter(v1)
