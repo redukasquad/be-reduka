@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: reduka_mysql_prod
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: ${DB_NAME:-reduka}
+      MYSQL_USER: ${DB_USER:-reduka}
+      MYSQL_PASSWORD: ${DB_PASS:-reduka123}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - reduka_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    container_name: reduka_redis_prod
+    restart: always
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+    networks:
+      - reduka_network
+
+  api:
+    container_name: reduka_api_prod
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "${GOLANG_PORT:-8888}:8888"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - reduka_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+
+networks:
+  reduka_network:
+    driver: bridge

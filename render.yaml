@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: be-reduka
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      # Database Configuration (set in Render Dashboard)
+      - key: DB_HOST
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASS
+        sync: false
+      - key: DB_NAME
+        sync: false
+      - key: DB_PORT
+        sync: false
+      
+      # Application Configuration
+      - key: GOLANG_PORT
+        value: "8888"
+      - key: APP_ENV
+        value: "production"
+      - key: JWT_SECRET
+        generateValue: true
+      
+      # Frontend URL for CORS (set in Render Dashboard)
+      - key: FRONTEND_URL
+        sync: false
+      
+      # Resend Email API Configuration (set in Render Dashboard)
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false
+      
+      # Google OAuth (set in Render Dashboard)
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URL
+        sync: false

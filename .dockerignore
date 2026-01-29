@@ -1,0 +1,30 @@
+# Version control
+.git
+.gitignore
+
+# Logs
+logs
+*.log
+
+# Docker files (not needed inside container)
+docker-compose*.yml
+Dockerfile*
+
+# Development files
+.air.toml
+tmp/
+
+# Environment files (credentials should be set in Render Dashboard)
+.env
+.env.*
+
+# IDE
+.vscode
+.idea
+
+# Documentation
+README.md
+*.md
+
+# Render blueprint (not needed in container)
+render.yaml

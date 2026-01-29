@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: reduka_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: reduka
+      MYSQL_USER: reduka
+      MYSQL_PASSWORD: reduka123
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./dbshell:/docker-entrypoint-initdb.d/
+    networks:
+      - reduka_network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:alpine
+    container_name: reduka_redis
+    restart: always
+    command: [ "redis-server", "--appendonly", "yes" ]
+    volumes:
+      - redis_data:/data
+    networks:
+      - reduka_network
+
+  api:
+    container_name: reduka_api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    restart: always
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/app
+      - /app/tmp
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=reduka
+      - DB_PASS=reduka123
+      - DB_NAME=reduka
+      - DB_PORT=3306
+      - GOLANG_PORT=8888
+      - JWT_SECRET=d2f6c8a4e91b7c3f0a9d4b6e82c1f7a4c9e3b1d7f5a2c8e6b4f7a1c9d3e8b6f2
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_SENDER_NAME=Reduka <redukasquad@gmail.com>
+      - SMTP_AUTH_EMAIL=redukasquad@gmail.com
+      - SMTP_AUTH_PASSWORD=ufaq frdw gyae dkfe
+      - FRONTEND_URL=http://localhost:5173
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - reduka_network
+
+volumes:
+  mysql_data:
+  redis_data:
+
+
+networks:
+  reduka_network:
+    driver: bridge
