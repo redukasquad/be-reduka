@@ -147,3 +147,17 @@
 {"time":"2026-01-29T14:57:30.2631607+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"0216518f-5724-44af-8926-bb655ff27995","user_id":0}
 {"time":"2026-01-29T15:04:01.1420565+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"9ac58c29-2382-41cf-bded-3f6f11241d0d","user_id":0}
 {"time":"2026-01-29T15:04:01.150075+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"9ac58c29-2382-41cf-bded-3f6f11241d0d","user_id":0}
+{"time":"2026-01-30T16:18:24.1368282+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-30T16:44:56.3211632+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"162d964d-62db-46c2-8d5b-1db180ec76cc","user_id":0}
+{"time":"2026-01-30T16:44:56.3827489+07:00","level":"ERROR","msg":"Failed to create course: Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`reduka`.`courses`, CONSTRAINT `fk_courses_creator` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`))","domain":"courses","action":"create","request_id":"162d964d-62db-46c2-8d5b-1db180ec76cc","user_id":0}
+{"time":"2026-01-30T16:49:19.2464222+07:00","level":"INFO","msg":"Attempting to create new program","domain":"programs","action":"create","request_id":"7c9b1ec4-505b-420b-ae94-6ca24bc38062","user_id":0}
+{"time":"2026-01-30T16:49:19.3035916+07:00","level":"INFO","msg":"Program created successfully","domain":"programs","action":"create","request_id":"7c9b1ec4-505b-420b-ae94-6ca24bc38062","user_id":0}
+{"time":"2026-01-30T16:49:33.064865+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"e84f7f8a-2040-425d-a245-e5a518a36e41","user_id":0}
+{"time":"2026-01-30T16:49:33.1057417+07:00","level":"ERROR","msg":"Failed to create course: Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`reduka`.`courses`, CONSTRAINT `fk_courses_creator` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`))","domain":"courses","action":"create","request_id":"e84f7f8a-2040-425d-a245-e5a518a36e41","user_id":0}
+{"time":"2026-01-30T16:55:33.2593404+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-30T16:57:09.8060679+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"dee224d0-7e8f-4de4-abcd-f304641c6cde","user_id":1}
+{"time":"2026-01-30T16:57:09.8612805+07:00","level":"INFO","msg":"Course created successfully","domain":"courses","action":"create","request_id":"dee224d0-7e8f-4de4-abcd-f304641c6cde","user_id":1}
+{"time":"2026-01-30T17:01:06.8984122+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-30T17:03:14.0565101+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-30T17:08:36.6215495+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"60e33326-7f7f-4373-90f0-69828929ee48","user_id":1}
+{"time":"2026-01-30T17:08:36.6362845+07:00","level":"ERROR","msg":"Failed to create course: Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`reduka`.`courses`, CONSTRAINT `fk_programs_courses` FOREIGN KEY (`program_id`) REFERENCES `programs` (`id`))","domain":"courses","action":"create","request_id":"60e33326-7f7f-4373-90f0-69828929ee48","user_id":1}

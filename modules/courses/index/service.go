@@ -16,9 +16,9 @@ type courseService struct {
 type Service interface {
 	GetAll(params dto.ListQueryParams, requestID string) (*dto.PaginatedResponse[dto.CourseResponse], error)
 	GetByID(id uint, requestID string) (*dto.CourseResponse, error)
-	GetByProgramID(programID uint, requestID string) ([]entities.Course, error)
-	Create(input CreateCourseInput, requestID string, userID uint) (*entities.Course, error)
-	Update(id uint, input UpdateCourseInput, requestID string, userID uint) (*entities.Course, error)
+	GetByProgramID(programID uint, requestID string) ([]dto.CourseResponse, error)
+	Create(input CreateCourseInput, requestID string, userID uint) (*dto.CourseResponse, error)
+	Update(id uint, input UpdateCourseInput, requestID string, userID uint) (*dto.CourseResponse, error)
 	Delete(id uint, requestID string, userID uint) error
 }
 
@@ -30,9 +30,9 @@ func (s *courseService) GetAll(params dto.ListQueryParams, requestID string) (*d
 	params.SetDefaults()
 
 	utils.LogInfo("courses", "get_all", "Fetching courses with pagination", requestID, 0, map[string]any{
-		"page": params.Page,
-		"perPage":params.PerPage,
-		"search":params.Q,
+		"page":    params.Page,
+		"perPage": params.PerPage,
+		"search":  params.Q,
 	})
 
 	courses, err := s.repo.FindAllPaginated(params.GetOffset(), params.PerPage, params.Q)
@@ -56,7 +56,7 @@ func (s *courseService) GetAll(params dto.ListQueryParams, requestID string) (*d
 	response := dto.NewPaginatedResponse(courseResponses, params.Page, params.PerPage, totalCount)
 
 	utils.LogSuccess("courses", "get_all", "Successfully fetched all courses", requestID, 0, map[string]any{
-		"count": len(courses),
+		"count":      len(courses),
 		"totalItems": totalCount,
 	})
 	return &response, nil
@@ -85,12 +85,12 @@ func (s *courseService) GetByID(id uint, requestID string) (*dto.CourseResponse,
 		"course_id":   course.ID,
 		"course_name": course.NameCourse,
 	})
-	
-	response:=dto.ToCourseResponse(course)
+
+	response := dto.ToCourseResponse(course)
 	return &response, nil
 }
 
-func (s *courseService) GetByProgramID(programID uint, requestID string) ([]entities.Course, error) {
+func (s *courseService) GetByProgramID(programID uint, requestID string) ([]dto.CourseResponse, error) {
 	utils.LogInfo("courses", "get_by_program_id", "Fetching courses by program ID", requestID, 0, map[string]any{
 		"program_id": programID,
 	})
@@ -103,14 +103,19 @@ func (s *courseService) GetByProgramID(programID uint, requestID string) ([]enti
 		return nil, err
 	}
 
+	var courseResponses []dto.CourseResponse
+	for _, course := range courses {
+		courseResponses = append(courseResponses, dto.ToCourseResponse(course))
+	}
+
 	utils.LogSuccess("courses", "get_by_program_id", "Successfully fetched courses by program", requestID, 0, map[string]any{
 		"program_id": programID,
 		"count":      len(courses),
 	})
-	return courses, nil
+	return courseResponses, nil
 }
 
-func (s *courseService) Create(input CreateCourseInput, requestID string, userID uint) (*entities.Course, error) {
+func (s *courseService) Create(input CreateCourseInput, requestID string, userID uint) (*dto.CourseResponse, error) {
 	utils.LogInfo("courses", "create", "Attempting to create new course", requestID, userID, map[string]any{
 		"course_name": input.NameCourse,
 		"program_id":  input.ProgramID,
@@ -142,14 +147,22 @@ func (s *courseService) Create(input CreateCourseInput, requestID string, userID
 		return nil, err
 	}
 
+	// Fetch dengan preload relations
+	createdCourse, err := s.repo.FindByID(course.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	utils.LogSuccess("courses", "create", "Course created successfully", requestID, userID, map[string]any{
 		"course_id":   course.ID,
 		"course_name": course.NameCourse,
 	})
-	return course, nil
+
+	response := dto.ToCourseResponse(createdCourse)
+	return &response, nil
 }
 
-func (s *courseService) Update(id uint, input UpdateCourseInput, requestID string, userID uint) (*entities.Course, error) {
+func (s *courseService) Update(id uint, input UpdateCourseInput, requestID string, userID uint) (*dto.CourseResponse, error) {
 	utils.LogInfo("courses", "update", "Attempting to update course", requestID, userID, map[string]any{
 		"course_id": id,
 	})
@@ -206,11 +219,19 @@ func (s *courseService) Update(id uint, input UpdateCourseInput, requestID strin
 		return nil, err
 	}
 
+	// Fetch ulang dengan preload relations
+	updatedCourse, err := s.repo.FindByID(course.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	utils.LogSuccess("courses", "update", "Course updated successfully", requestID, userID, map[string]any{
 		"course_id":   course.ID,
 		"course_name": course.NameCourse,
 	})
-	return &course, nil
+
+	response := dto.ToCourseResponse(updatedCourse)
+	return &response, nil
 }
 
 func (s *courseService) Delete(id uint, requestID string, userID uint) error {

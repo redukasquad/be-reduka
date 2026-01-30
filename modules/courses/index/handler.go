@@ -40,10 +40,16 @@ func getUserID(c *gin.Context) uint {
 	if !exists {
 		return 0
 	}
-	if id, ok := userID.(uint); ok {
-		return id
-	}
-	return 0
+	
+	switch id := userID.(type) {
+    case int:
+        return uint(id)
+    case uint:
+        return id
+    case float64:
+        return uint(id)
+    }
+    return 0
 }
 
 func (h *handler) GetAllCoursesHandler(c *gin.Context) {
