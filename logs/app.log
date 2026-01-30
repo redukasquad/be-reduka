@@ -136,3 +136,14 @@
 {"time":"2026-01-21T08:33:00.8087847+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"c5923c79-2291-41a3-ac7e-b43e55b7aece","user_id":0}
 {"time":"2026-01-21T08:38:53.2580674+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"57c47610-c0dc-4c8d-9d89-014e5b4cbd97","user_id":0}
 {"time":"2026-01-21T08:38:53.3198197+07:00","level":"ERROR","msg":"Failed to create course: Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`reduka`.`courses`, CONSTRAINT `fk_courses_creator` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`))","domain":"courses","action":"create","request_id":"57c47610-c0dc-4c8d-9d89-014e5b4cbd97","user_id":0}
+{"time":"2026-01-29T14:36:24.2108841+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-29T14:37:06.1626073+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-29T14:40:01.373508+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-29T14:52:58.9092054+07:00","level":"INFO","msg":"Fetching course by ID","domain":"courses","action":"get_by_id","request_id":"e621f953-3add-4bf2-9739-e87786e94812","user_id":0}
+{"time":"2026-01-29T14:52:59.2335929+07:00","level":"WARN","msg":"Course not found","domain":"courses","action":"get_by_id","request_id":"e621f953-3add-4bf2-9739-e87786e94812","user_id":0}
+{"time":"2026-01-29T14:54:36.6031637+07:00","level":"INFO","msg":"Fetching course by ID","domain":"courses","action":"get_by_id","request_id":"b5910f83-26ee-4624-9d0c-a25ec1511358","user_id":0}
+{"time":"2026-01-29T14:54:36.6053021+07:00","level":"WARN","msg":"Course not found","domain":"courses","action":"get_by_id","request_id":"b5910f83-26ee-4624-9d0c-a25ec1511358","user_id":0}
+{"time":"2026-01-29T14:57:29.9427312+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"0216518f-5724-44af-8926-bb655ff27995","user_id":0}
+{"time":"2026-01-29T14:57:30.2631607+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"0216518f-5724-44af-8926-bb655ff27995","user_id":0}
+{"time":"2026-01-29T15:04:01.1420565+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"9ac58c29-2382-41cf-bded-3f6f11241d0d","user_id":0}
+{"time":"2026-01-29T15:04:01.150075+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"9ac58c29-2382-41cf-bded-3f6f11241d0d","user_id":0}
