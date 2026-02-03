@@ -3,7 +3,7 @@ package resources
 type CreateResourceInput struct {
 	Type  string `json:"type" binding:"required,oneof=video document link zoom recording"`
 	Title string `json:"title" binding:"required"`
-	URL   string `json:"url" binding:"required,url"`
+	URL   string `json:"url" binding:"omitempty,url"`
 }
 
 type UpdateResourceInput struct {

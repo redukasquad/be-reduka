@@ -161,3 +161,48 @@
 {"time":"2026-01-30T17:03:14.0565101+07:00","level":"INFO","msg":"Logger initialized"}
 {"time":"2026-01-30T17:08:36.6215495+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"60e33326-7f7f-4373-90f0-69828929ee48","user_id":1}
 {"time":"2026-01-30T17:08:36.6362845+07:00","level":"ERROR","msg":"Failed to create course: Error 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`reduka`.`courses`, CONSTRAINT `fk_programs_courses` FOREIGN KEY (`program_id`) REFERENCES `programs` (`id`))","domain":"courses","action":"create","request_id":"60e33326-7f7f-4373-90f0-69828929ee48","user_id":1}
+{"time":"2026-01-31T09:16:28.9478791+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-01-31T09:17:01.4775794+07:00","level":"INFO","msg":"Fetching all programs","domain":"programs","action":"get_all","request_id":"b1f4eeea-392b-4b22-9316-1b081a1164ee","user_id":0}
+{"time":"2026-01-31T09:17:01.5463856+07:00","level":"INFO","msg":"Successfully fetched all programs","domain":"programs","action":"get_all","request_id":"b1f4eeea-392b-4b22-9316-1b081a1164ee","user_id":0}
+{"time":"2026-01-31T09:17:17.4648526+07:00","level":"INFO","msg":"Fetching all programs","domain":"programs","action":"get_all","request_id":"2119cdeb-a15f-4e9b-9579-657d99976a8e","user_id":0}
+{"time":"2026-01-31T09:17:17.5079576+07:00","level":"INFO","msg":"Successfully fetched all programs","domain":"programs","action":"get_all","request_id":"2119cdeb-a15f-4e9b-9579-657d99976a8e","user_id":0}
+{"time":"2026-01-31T09:17:49.6681826+07:00","level":"INFO","msg":"Fetching program by ID","domain":"programs","action":"get_by_id","request_id":"ac4c80c9-693a-47e9-87ba-295d4cb12b48","user_id":0}
+{"time":"2026-01-31T09:17:49.7493695+07:00","level":"WARN","msg":"Program not found","domain":"programs","action":"get_by_id","request_id":"ac4c80c9-693a-47e9-87ba-295d4cb12b48","user_id":0}
+{"time":"2026-01-31T09:18:33.86163+07:00","level":"INFO","msg":"Attempting to create new program","domain":"programs","action":"create","request_id":"22dfc84f-7aac-43c4-bb93-38bb744e3345","user_id":0}
+{"time":"2026-01-31T09:18:33.9474666+07:00","level":"INFO","msg":"Program created successfully","domain":"programs","action":"create","request_id":"22dfc84f-7aac-43c4-bb93-38bb744e3345","user_id":0}
+{"time":"2026-01-31T09:18:43.1908467+07:00","level":"INFO","msg":"Fetching all programs","domain":"programs","action":"get_all","request_id":"a02c764b-173a-4302-99a8-1cacffcef658","user_id":0}
+{"time":"2026-01-31T09:18:43.202709+07:00","level":"INFO","msg":"Successfully fetched all programs","domain":"programs","action":"get_all","request_id":"a02c764b-173a-4302-99a8-1cacffcef658","user_id":0}
+{"time":"2026-01-31T09:18:51.1038422+07:00","level":"INFO","msg":"Fetching program by ID","domain":"programs","action":"get_by_id","request_id":"f8c31da8-9e5d-441d-84f4-090b55ecbad5","user_id":0}
+{"time":"2026-01-31T09:18:51.1805067+07:00","level":"INFO","msg":"Successfully fetched program","domain":"programs","action":"get_by_id","request_id":"f8c31da8-9e5d-441d-84f4-090b55ecbad5","user_id":0}
+{"time":"2026-01-31T09:19:32.0087719+07:00","level":"INFO","msg":"Attempting to create new program","domain":"programs","action":"create","request_id":"dc7e78b5-c153-4aee-80d4-f0a606a04deb","user_id":0}
+{"time":"2026-01-31T09:19:32.0177558+07:00","level":"INFO","msg":"Program created successfully","domain":"programs","action":"create","request_id":"dc7e78b5-c153-4aee-80d4-f0a606a04deb","user_id":0}
+{"time":"2026-01-31T09:19:54.0363816+07:00","level":"INFO","msg":"Attempting to create new program","domain":"programs","action":"create","request_id":"e83a2413-362d-4bca-b86c-3db232795578","user_id":0}
+{"time":"2026-01-31T09:19:54.0430889+07:00","level":"INFO","msg":"Program created successfully","domain":"programs","action":"create","request_id":"e83a2413-362d-4bca-b86c-3db232795578","user_id":0}
+{"time":"2026-01-31T09:20:02.2948142+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"49ff18bc-c921-49cd-a7d3-da1e234283e1","user_id":0}
+{"time":"2026-01-31T09:20:02.302531+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"49ff18bc-c921-49cd-a7d3-da1e234283e1","user_id":0}
+{"time":"2026-01-31T09:20:28.5607217+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"9fb92821-ddfd-4f92-a1b9-801c0d79e202","user_id":1}
+{"time":"2026-01-31T09:20:28.6613465+07:00","level":"INFO","msg":"Course created successfully","domain":"courses","action":"create","request_id":"9fb92821-ddfd-4f92-a1b9-801c0d79e202","user_id":1}
+{"time":"2026-01-31T09:22:03.3852599+07:00","level":"INFO","msg":"Fetching courses by program ID","domain":"courses","action":"get_by_program_id","request_id":"6993c0dc-cda9-419c-b881-5f9b76775a9c","user_id":0}
+{"time":"2026-01-31T09:22:03.431858+07:00","level":"INFO","msg":"Successfully fetched courses by program","domain":"courses","action":"get_by_program_id","request_id":"6993c0dc-cda9-419c-b881-5f9b76775a9c","user_id":0}
+{"time":"2026-01-31T09:22:29.3804083+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"442c6e84-f6c5-429e-835f-7173b4f46ff1","user_id":0}
+{"time":"2026-01-31T09:22:29.3867999+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"442c6e84-f6c5-429e-835f-7173b4f46ff1","user_id":0}
+{"time":"2026-01-31T09:22:41.5005009+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"2a2fab1f-adb4-470e-8a12-0c0769cd52e5","user_id":0}
+{"time":"2026-01-31T09:22:41.5068316+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"2a2fab1f-adb4-470e-8a12-0c0769cd52e5","user_id":0}
+{"time":"2026-01-31T09:23:18.6545545+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"c31ab6ff-2f4c-4341-b7b4-f13a1165af76","user_id":0}
+{"time":"2026-01-31T09:23:18.6951218+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"c31ab6ff-2f4c-4341-b7b4-f13a1165af76","user_id":0}
+{"time":"2026-01-31T09:23:54.2773519+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"a234b4fb-e475-4c1d-9738-e870ac30e66e","user_id":0}
+{"time":"2026-01-31T09:23:54.3173361+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"a234b4fb-e475-4c1d-9738-e870ac30e66e","user_id":0}
+{"time":"2026-01-31T09:28:14.6350633+07:00","level":"INFO","msg":"Attempting to create new course","domain":"courses","action":"create","request_id":"e7f67057-96b9-4be4-b99e-024351fbcaf6","user_id":1}
+{"time":"2026-01-31T09:28:14.6594042+07:00","level":"INFO","msg":"Course created successfully","domain":"courses","action":"create","request_id":"e7f67057-96b9-4be4-b99e-024351fbcaf6","user_id":1}
+{"time":"2026-01-31T09:30:10.5293237+07:00","level":"INFO","msg":"Fetching courses by program ID","domain":"courses","action":"get_by_program_id","request_id":"25210ca8-8136-4fa9-b98f-fc15f74de637","user_id":0}
+{"time":"2026-01-31T09:30:10.5345316+07:00","level":"INFO","msg":"Successfully fetched courses by program","domain":"courses","action":"get_by_program_id","request_id":"25210ca8-8136-4fa9-b98f-fc15f74de637","user_id":0}
+{"time":"2026-01-31T09:31:53.6177998+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"94923707-aca2-499a-b517-d004c350099f","user_id":0}
+{"time":"2026-01-31T09:31:53.6249941+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"94923707-aca2-499a-b517-d004c350099f","user_id":0}
+{"time":"2026-01-31T09:33:00.0341617+07:00","level":"INFO","msg":"Fetching courses with pagination","domain":"courses","action":"get_all","request_id":"4e46fdf9-766a-41c6-a82b-451124a3b779","user_id":0}
+{"time":"2026-01-31T09:33:00.0598255+07:00","level":"INFO","msg":"Successfully fetched all courses","domain":"courses","action":"get_all","request_id":"4e46fdf9-766a-41c6-a82b-451124a3b779","user_id":0}
+{"time":"2026-01-31T09:33:37.4352181+07:00","level":"INFO","msg":"Fetching course by ID","domain":"courses","action":"get_by_id","request_id":"e35e4e41-c736-4021-97b6-30f480cd7286","user_id":0}
+{"time":"2026-01-31T09:33:37.4379221+07:00","level":"WARN","msg":"Course not found","domain":"courses","action":"get_by_id","request_id":"e35e4e41-c736-4021-97b6-30f480cd7286","user_id":0}
+{"time":"2026-01-31T09:33:47.8141541+07:00","level":"INFO","msg":"Fetching course by ID","domain":"courses","action":"get_by_id","request_id":"c2ebca59-010a-4a17-91b1-8d30316628cb","user_id":0}
+{"time":"2026-01-31T09:33:47.9792686+07:00","level":"INFO","msg":"Successfully fetched course","domain":"courses","action":"get_by_id","request_id":"c2ebca59-010a-4a17-91b1-8d30316628cb","user_id":0}
+{"time":"2026-01-31T10:14:02.716081+07:00","level":"INFO","msg":"Logger initialized"}
+{"time":"2026-02-01T20:20:01.7836532+07:00","level":"INFO","msg":"Logger initialized"}
