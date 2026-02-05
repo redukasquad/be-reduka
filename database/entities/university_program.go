@@ -13,4 +13,3 @@ type UniversityProgram struct {
 	University University  `json:"university,omitempty"`
 	Targets    []UserTarget `json:"targets,omitempty"`
 }
-

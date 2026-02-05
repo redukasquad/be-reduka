@@ -32,7 +32,6 @@ func ConnectDatabase() {
 
 	log.Println("Running auto-migrations...")
 
-
 	log.Println("🚀 Running auto-migrations...")
 	err = DB.AutoMigrate(
 		// ===== USER & AUTH =====
@@ -50,8 +49,15 @@ func ConnectDatabase() {
 		&entities.ClassLesson{},
 
 		// ===== TRYOUT =====
-		// Belum selesai
-		
+		&entities.Subtest{},            // Master data (7 fixed subtests)
+		&entities.TryOut{},             // Try Out packages
+		&entities.TutorPermission{},    // Tutor permissions per package
+		&entities.TryOutQuestion{},     // Questions per subtest
+		&entities.TryOutRegistration{}, // User registrations + payment
+		&entities.TryOutAttempt{},      // Attempt sessions
+		&entities.SubtestResult{},      // Results per subtest
+		&entities.UserTryOutAnswer{},   // Individual answers
+
 		// ===== UNIVERSITY & TARGET =====
 		&entities.University{},
 		&entities.UniversityProgram{},
@@ -62,6 +68,13 @@ func ConnectDatabase() {
 		log.Fatalf("Failed to run auto-migrations: %v", err)
 	}
 	log.Println("Auto-migrations completed successfully!")
+
+	// Seed master data
+	log.Println("🌱 Running seeders...")
+	if err := SeedSubtests(DB); err != nil {
+		log.Fatalf("Failed to seed subtests: %v", err)
+	}
+	log.Println("Seeders completed successfully!")
 }
 
 func GetDB() *gorm.DB {
