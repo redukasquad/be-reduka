@@ -2,7 +2,7 @@ package entities
 
 import "gorm.io/gorm"
 
-type UniversityProgram struct {
+type UniversityMajor struct {
 	gorm.Model
 
 	UniversityID uint    `json:"universityId" form:"universityId" binding:"required"`

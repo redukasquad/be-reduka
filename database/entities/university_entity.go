@@ -9,5 +9,5 @@ type University struct {
 	Type string `json:"type" form:"type" binding:"required,oneof=PTN PTS PTK" gorm:"type:enum('PTN','PTS','PTK')"`
 
 	// relations
-	Programs []UniversityProgram `json:"programs,omitempty"`
+	Major []UniversityMajor `json:"programs,omitempty"`
 }

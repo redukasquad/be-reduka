@@ -49,18 +49,18 @@ func ConnectDatabase() {
 		&entities.ClassLesson{},
 
 		// ===== TRYOUT =====
-		&entities.Subtest{},            // Master data (7 fixed subtests)
-		&entities.TryOut{},             // Try Out packages
-		&entities.TutorPermission{},    // Tutor permissions per package
-		&entities.TryOutQuestion{},     // Questions per subtest
-		&entities.TryOutRegistration{}, // User registrations + payment
-		&entities.TryOutAttempt{},      // Attempt sessions
-		&entities.SubtestResult{},      // Results per subtest
-		&entities.UserTryOutAnswer{},   // Individual answers
+		&entities.Subtest{},            
+		&entities.TryOut{},             
+		&entities.TutorPermission{},    
+		&entities.TryOutQuestion{},     
+		&entities.TryOutRegistration{}, 
+		&entities.TryOutAttempt{},      
+		&entities.SubtestResult{},      
+		&entities.UserTryOutAnswer{},   
 
 		// ===== UNIVERSITY & TARGET =====
 		&entities.University{},
-		&entities.UniversityProgram{},
+		&entities.UniversityMajor{},
 		&entities.UserTarget{},
 	)
 

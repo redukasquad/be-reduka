@@ -11,5 +11,5 @@ type UserTarget struct {
 
 	// relations
 	User              User              `json:"user,omitempty"`
-	UniversityProgram UniversityProgram `json:"universityProgram,omitempty"`
+	Major 						UniversityMajor 	`json:"universityProgram,omitempty"`
 }
