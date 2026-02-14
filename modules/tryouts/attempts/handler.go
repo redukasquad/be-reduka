@@ -59,7 +59,7 @@ func getUserID(c *gin.Context) uint {
 func (h *handler) StartAttemptHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
-	regIDStr := c.Param("regId")
+	regIDStr := c.Param("id")
 
 	regID, err := strconv.ParseUint(regIDStr, 10, 32)
 	if err != nil {

@@ -11,7 +11,7 @@ func AttemptRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, require
 	handler := NewHandler(service)
 
 	// Start attempt from registration
-	router.POST("/tryouts/registrations/:regId/start", requireAuth, handler.StartAttemptHandler)
+	router.POST("/tryouts/registrations/:id/start", requireAuth, handler.StartAttemptHandler)
 
 	// Attempt operations
 	attemptRoutes := router.Group("/tryouts/attempts")
