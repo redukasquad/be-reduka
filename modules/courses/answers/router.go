@@ -14,5 +14,7 @@ func AnswerRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireA
 	registrations.Use(requireAuth, requireAdmin)
 	{
 		registrations.GET("/:registrationId/answers", answerHandler.GetAnswersByRegistrationHandler)
+		registrations.POST("/:registrationId/answers", answerHandler.CreateAnswerHandler)
+		registrations.DELETE("/answers/:id", answerHandler.DeleteAnswerHandler)
 	}
 }

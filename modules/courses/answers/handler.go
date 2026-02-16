@@ -15,6 +15,8 @@ type handler struct {
 
 type Handler interface {
 	GetAnswersByRegistrationHandler(c *gin.Context)
+	CreateAnswerHandler(c *gin.Context)
+	DeleteAnswerHandler(c *gin.Context)
 }
 
 func NewHandler(service Service) Handler {
@@ -46,4 +48,45 @@ func (h *handler) GetAnswersByRegistrationHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Answers retrieved successfully", answers))
+}
+
+func (h *handler) CreateAnswerHandler(c *gin.Context) {
+	requestID := getRequestID(c)
+
+	var input CreateAnswerRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid request body", err.Error(), nil))
+		return
+	}
+
+	answer, err := h.service.CreateAnswer(input, requestID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to create answer", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusCreated, utils.BuildResponseSuccess("Answer created successfully", answer))
+}
+
+func (h *handler) DeleteAnswerHandler(c *gin.Context) {
+	requestID := getRequestID(c)
+	idStr := c.Param("id")
+
+	id, err := strconv.ParseUint(idStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Answer ID", "Answer ID must be a valid number", nil))
+		return
+	}
+
+	err = h.service.DeleteAnswer(uint(id), requestID)
+	if err != nil {
+		if err.Error() == "answer not found" {
+			c.JSON(http.StatusNotFound, utils.BuildResponseFailed("Answer not found", err.Error(), nil))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to delete answer", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Answer deleted successfully", nil))
 }

@@ -11,3 +11,9 @@ type AnswerResponse struct {
 type AnswerListResponse struct {
 	Answers []AnswerResponse `json:"answers"`
 }
+
+type CreateAnswerRequest struct {
+	RegistrationID uint   `json:"registrationId" binding:"required"`
+	QuestionID     uint   `json:"questionId" binding:"required"`
+	AnswerText     string `json:"answerText" binding:"required"`
+}
