@@ -9,6 +9,7 @@ type CreateCourseInput struct {
 	StartDate         time.Time `json:"startDate" binding:"required"`
 	EndDate           time.Time `json:"endDate" binding:"required"`
 	IsFree            bool      `json:"isFree"`
+	Image             string    `json:"image,omitempty"`
 	WhatsappGroupLink string    `json:"whatsappGroupLink"`
 }
 
@@ -19,6 +20,7 @@ type UpdateCourseInput struct {
 	StartDate         *time.Time `json:"startDate"`
 	EndDate           *time.Time `json:"endDate"`
 	IsFree            *bool      `json:"isFree"`
+	Image             *string    `json:"image,omitempty"`
 	WhatsappGroupLink *string    `json:"whatsappGroupLink"`
 }
 
@@ -32,6 +34,7 @@ type CourseResponse struct {
 	IsFree            bool      `json:"isFree"`
 	WhatsappGroupLink string    `json:"whatsappGroupLink,omitempty"`
 	CreatedAt         time.Time `json:"createdAt"`
+	Image             string    `json:"image,omitempty"`
 }
 
 type CourseListResponse struct {
