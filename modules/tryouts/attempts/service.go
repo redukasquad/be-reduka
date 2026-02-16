@@ -480,8 +480,10 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 			totalScore += *r.FinalScore
 		}
 	}
+	if len(results) > 0 {
+		totalScore = totalScore / float64(len(results))
+	}
 
-	// Update attempt
 	now := time.Now()
 	attempt.FinishedAt = &now
 	attempt.Status = entities.AttemptStatusCompleted
