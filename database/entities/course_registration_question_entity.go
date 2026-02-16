@@ -8,7 +8,7 @@ type RegistrationQuestion struct {
 	CourseID uint `json:"courseId" form:"courseId" binding:"required"`
 
 	QuestionText  string `json:"questionText" form:"questionText" binding:"required"`
-	QuestionType  string `json:"questionType" form:"questionType" binding:"required,oneof=text textarea select radio checkbox file"`
+	QuestionType  string `json:"questionType" form:"questionType" binding:"required,oneof=text select radio file"`
 	QuestionOrder int    `json:"questionOrder" form:"questionOrder" binding:"required,min=1"`
 
 	// relations
