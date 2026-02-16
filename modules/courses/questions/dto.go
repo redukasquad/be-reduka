@@ -2,7 +2,7 @@ package questions
 
 type CreateQuestionInput struct {
 	QuestionText  string `json:"questionText" binding:"required"`
-	QuestionType  string `json:"questionType" binding:"required,oneof=text textarea select radio checkbox"`
+	QuestionType  string `json:"questionType" binding:"required,oneof=text select radio checkbox"`
 	QuestionOrder int    `json:"questionOrder" binding:"required,min=1"`
 }
 
