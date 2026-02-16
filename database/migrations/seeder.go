@@ -21,14 +21,14 @@ func SeedSubtests(db *gorm.DB) error {
 		},
 		{
 			Code:             "PBM",
-			Name:             "Penalaran Matematika",
+			Name:             "Pemahaman Bacaan dan Menulis",
 			QuestionCount:    20,
 			TimeLimitSeconds: 1500, // 25 minutes
 			MaxScore:         857.13,
 		},
 		{
 			Code:             "PPU",
-			Name:             "Pemahaman Bacaan dan Menulis",
+			Name:             "Pengetahuan dan Pemahaman Umum",
 			QuestionCount:    20,
 			TimeLimitSeconds: 900, // 15 minutes
 			MaxScore:         875.96,
