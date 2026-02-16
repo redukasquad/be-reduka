@@ -7,9 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// SeedSubtests seeds the 7 fixed subtests for Try Out.
-// This should be called once after migration.
-// Order of insertion determines the subtest order during Try Out.
 func SeedSubtests(db *gorm.DB) error {
 	subtests := []entities.Subtest{
 		{
@@ -64,7 +61,6 @@ func SeedSubtests(db *gorm.DB) error {
 	}
 
 	for _, subtest := range subtests {
-		// Use FirstOrCreate to avoid duplicates
 		result := db.Where("code = ?", subtest.Code).FirstOrCreate(&subtest)
 		if result.Error != nil {
 			return result.Error
