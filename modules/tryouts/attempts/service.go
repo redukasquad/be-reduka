@@ -410,9 +410,22 @@ func (s *attemptService) SubmitSubtest(attemptID, subtestID uint, input SubmitSu
 	// Count unanswered
 	unansweredCount = len(questions) - correctCount - wrongCount
 
-	// Calculate final score (normalized to MaxScore)
-	maxRawScore := float64(subtest.QuestionCount) * WeightHard // Max possible with all hard questions
-	finalScore := (rawScore / maxRawScore) * subtest.MaxScore
+	var maxRawScore float64
+	for _, q := range questions {
+		switch q.DifficultyLevel {
+		case entities.DifficultyEasy:
+			maxRawScore += WeightEasy
+		case entities.DifficultyMedium:
+			maxRawScore += WeightMedium
+		case entities.DifficultyHard:
+			maxRawScore += WeightHard
+		}
+	}
+
+	var finalScore float64
+	if maxRawScore > 0 {
+		finalScore = (rawScore / maxRawScore) * subtest.MaxScore
+	}
 
 	// Update subtest result
 	now := time.Now()
