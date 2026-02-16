@@ -49,19 +49,22 @@ func ConnectDatabase() {
 		&entities.ClassLesson{},
 
 		// ===== TRYOUT =====
-		&entities.Subtest{},            
-		&entities.TryOut{},             
-		&entities.TutorPermission{},    
-		&entities.TryOutQuestion{},     
-		&entities.TryOutRegistration{}, 
-		&entities.TryOutAttempt{},      
-		&entities.SubtestResult{},      
-		&entities.UserTryOutAnswer{},   
+		&entities.Subtest{},
+		&entities.TryOut{},
+		&entities.TutorPermission{},
+		&entities.TryOutQuestion{},
+		&entities.TryOutRegistration{},
+		&entities.TryOutAttempt{},
+		&entities.SubtestResult{},
+		&entities.UserTryOutAnswer{},
 
 		// ===== UNIVERSITY & TARGET =====
 		&entities.University{},
 		&entities.UniversityMajor{},
 		&entities.UserTarget{},
+
+		// ===== UPLOADS =====
+		&entities.Image{},
 	)
 
 	if err != nil {
