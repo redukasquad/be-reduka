@@ -17,19 +17,22 @@ type CourseResponse struct {
 	Creator           *CreatorResponse       `json:"creator,omitempty"`
 	Subjects          []SubjectBriefResponse `json:"subjects,omitempty"`
 	CreatedAt         time.Time              `json:"createdAt"`
+	Image             string                 `json:"image,omitempty"`
 } 
 
 func ToCourseResponse(course entities.Course) CourseResponse {
 	response := CourseResponse{
-			ID:                course.ID,
-			NameCourse:        course.NameCourse,
-			Description:       course.Description,
-			StartDate:         course.StartDate,
-			EndDate:           course.EndDate,
-			IsFree:            course.IsFree,
-			WhatsAppGroupLink: course.WhatsappGroupLink,
-			CreatedAt:         course.CreatedAt,
+		ID:                course.ID,
+		NameCourse:        course.NameCourse,
+		Description:       course.Description,
+		StartDate:         course.StartDate,
+		EndDate:           course.EndDate,
+		IsFree:            course.IsFree,
+		Image:             course.Image, 
+		WhatsAppGroupLink: course.WhatsappGroupLink,
+		CreatedAt:         course.CreatedAt,
 	}
+
 	
 	// Map Program jika ada (ID != 0)
 	if course.Program.ID != 0 {

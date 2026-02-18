@@ -18,7 +18,7 @@ type Course struct {
 	EndDate           time.Time `json:"endDate" form:"endDate" binding:"required"`
 	IsFree            bool      `json:"isFree" form:"isFree" gorm:"default:false"`
 	WhatsappGroupLink string    `json:"whatsappGroupLink" form:"whatsappGroupLink"`
-	Image             string    `json:"image" form:"image"`
+	Image string `json:"image" form:"image" gorm:"type:text"`
 
 	// relations
 	Program   Program                `json:"program,omitempty"`

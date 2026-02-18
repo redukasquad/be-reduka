@@ -138,6 +138,7 @@ func (s *courseService) Create(input CreateCourseInput, requestID string, userID
 		EndDate:           input.EndDate,
 		IsFree:            input.IsFree,
 		WhatsappGroupLink: input.WhatsappGroupLink,
+		Image: input.Image,
 	}
 
 	if err := s.repo.Create(course); err != nil {
@@ -211,7 +212,9 @@ func (s *courseService) Update(id uint, input UpdateCourseInput, requestID strin
 	if input.WhatsappGroupLink != nil {
 		course.WhatsappGroupLink = *input.WhatsappGroupLink
 	}
-
+	if input.Image != nil {
+		course.Image = *input.Image
+	}
 	if err := s.repo.Update(&course); err != nil {
 		utils.LogError("courses", "update", "Failed to update course: "+err.Error(), requestID, userID, map[string]any{
 			"course_id": id,
