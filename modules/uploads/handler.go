@@ -59,7 +59,6 @@ func (h *handler) DeleteImageHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid input", err.Error(), nil))
 		return
 	}
-
 	fileId, err := h.service.DeleteByURL(input.URL, requestID)
 	if err != nil {
 		if err.Error() == "image not found" {
