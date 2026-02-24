@@ -78,7 +78,7 @@ func (r *repository) FindPendingPayments() ([]entities.TryOutRegistration, error
 func (r *repository) FindByTryOutID(tryOutID uint) ([]entities.TryOutRegistration, error) {
 	var registrations []entities.TryOutRegistration
 	err := r.db.Where("try_out_package_id = ?", tryOutID).
-		Preload("TryOut").
+		Preload("TryOutPackage").
 		Preload("User").
 		Preload("ApprovedBy").
 		Order("registered_at DESC").
