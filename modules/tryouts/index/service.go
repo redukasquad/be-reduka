@@ -128,6 +128,7 @@ func (s *tryOutService) Create(input CreateTryOutInput, requestID string, userID
 		ImageURL:          input.ImageURL,
 		IsFree:            input.IsFree,
 		Price:             input.Price,
+		DriveLink :		   input.DriveLink,
 		QrisImageURL:      input.QrisImageURL,
 		PaymentLink:       input.PaymentLink,
 		RegistrationStart: input.RegistrationStart,
@@ -214,6 +215,7 @@ func (s *tryOutService) Update(id uint, input UpdateTryOutInput, requestID strin
 	if input.IsPublished != nil {
 		tryOut.IsPublished = *input.IsPublished
 	}
+	
 
 	// Validate registration dates
 	if tryOut.RegistrationEnd.Before(tryOut.RegistrationStart) {

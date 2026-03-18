@@ -14,6 +14,7 @@ type TryOutResponse struct {
 	Name              string                `json:"name"`
 	Description       string                `json:"description,omitempty"`
 	ImageURL          string                `json:"imageUrl,omitempty"`
+	DriveLink         string                `json:"driveLink,omitempty"`
 	IsFree            bool                  `json:"isFree"`
 	Price             float64               `json:"price,omitempty"`
 	QrisImageURL      string                `json:"qrisImageUrl,omitempty"`
@@ -56,6 +57,7 @@ type CreateTryOutInput struct {
 	RegistrationStart time.Time `json:"registrationStart" binding:"required"`
 	RegistrationEnd   time.Time `json:"registrationEnd" binding:"required"`
 	IsPublished       bool      `json:"isPublished"`
+	DriveLink         string     `json:"driveLink" binding:"required"`
 }
 
 // UpdateTryOutInput is the input for updating a Try Out
@@ -70,6 +72,7 @@ type UpdateTryOutInput struct {
 	RegistrationStart *time.Time `json:"registrationStart"`
 	RegistrationEnd   *time.Time `json:"registrationEnd"`
 	IsPublished       *bool      `json:"isPublished"`
+	DriveLink         *string    `json:"driveLink"`
 }
 
 // ==========================================

@@ -9,9 +9,9 @@ import (
 	"github.com/redukasquad/be-reduka/modules/tryouts/registrations"
 )
 
-func TryOutsRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
-	tryouts.TryOutIndexRouter(router, requireAuth, requireAdmin)
-	questions.QuestionRouter(router, requireAuth, requireAdmin)
-	registrations.RegistrationRouter(router, requireAuth, requireAdmin)
-	attempts.AttemptRouter(router, requireAuth, requireAdmin)
+func TryOutsRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdminOrTutor gin.HandlerFunc) {
+	tryouts.TryOutIndexRouter(router, requireAuth, requireAdminOrTutor)
+	questions.QuestionRouter(router, requireAuth, requireAdminOrTutor)
+	registrations.RegistrationRouter(router, requireAuth, requireAdminOrTutor)
+	attempts.AttemptRouter(router, requireAuth, requireAdminOrTutor)
 }

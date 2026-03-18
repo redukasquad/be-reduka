@@ -71,6 +71,10 @@ func RequireAuthorization(allowedRoles ...string) gin.HandlerFunc {
 		if user.Role != nil {
 			userRole = *user.Role
 		}
+		
+		fmt.Println("USER ROLE:", userRole)
+		fmt.Println("ALLOWED ROLES:", allowedRoles)
+		
 		for _, role := range allowedRoles {
 			if strings.EqualFold(userRole, role) {
 				hasRole = true
@@ -97,4 +101,9 @@ func RequireAdmin() gin.HandlerFunc {
 // RequireAdminOrTutor is a shortcut for RequireAuthorization(RoleAdmin, RoleTutor)
 func RequireAdminOrTutor() gin.HandlerFunc {
 	return RequireAuthorization(RoleAdmin, RoleTutor)
+}
+
+// RequireAdminOrTutorOrUser is a shortcut for RequireAuthorization(RoleAdmin, RoleTutor, RoleUser)
+func RequireAdminOrTutorOrUser() gin.HandlerFunc {
+	return RequireAuthorization(RoleAdmin, RoleTutor, RoleStudent)
 }

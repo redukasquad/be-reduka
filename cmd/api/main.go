@@ -68,8 +68,8 @@ func main() {
 		programs.ProgramRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 		courses.CoursesRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 		classes.ClassesRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutor())
-		tryouts.TryOutsRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
-		uploads.UploadRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
+		tryouts.TryOutsRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutor())
+		uploads.UploadRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutorOrUser())
 	}
 
 	port := os.Getenv("GOLANG_PORT")

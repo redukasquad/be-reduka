@@ -161,7 +161,7 @@ func (s *authService) Login(input LoginInput) (string, error) {
 func generateToken(userID int) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 1 ).Unix(), // 24 hours
+		"exp": time.Now().AddDate(0, 0, 30).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

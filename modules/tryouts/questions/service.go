@@ -73,6 +73,7 @@ func (s *questionService) GetSubtestsWithQuestionCount(tryOutID uint, requestID 
 		return nil, err
 	}
 
+	
 	var responses []SubtestWithQuestionsResponse
 	for _, subtest := range subtests {
 		count, err := s.repo.CountByTryOutAndSubtest(tryOutID, subtest.ID)
@@ -195,7 +196,6 @@ func (s *questionService) CreateQuestion(tryOutID, subtestID uint, input CreateQ
 		SubtestID:       subtestID,
 		QuestionText:    input.QuestionText,
 		ImageURL:        input.ImageURL,
-		Explanation:     input.Explanation,
 		DifficultyLevel: entities.DifficultyLevel(input.DifficultyLevel),
 		OrderNumber:     input.OrderNumber,
 		OptionA:         input.OptionA,
@@ -245,9 +245,6 @@ func (s *questionService) UpdateQuestion(id uint, input UpdateQuestionInput, req
 	}
 	if input.ImageURL != nil {
 		question.ImageURL = *input.ImageURL
-	}
-	if input.Explanation != nil {
-		question.Explanation = *input.Explanation
 	}
 	if input.DifficultyLevel != nil {
 		question.DifficultyLevel = entities.DifficultyLevel(*input.DifficultyLevel)

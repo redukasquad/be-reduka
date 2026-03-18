@@ -18,7 +18,6 @@ type QuestionResponse struct {
 	Subtest         *SubtestBriefResponse `json:"subtest,omitempty"`
 	QuestionText    string                `json:"questionText"`
 	ImageURL        string                `json:"imageUrl,omitempty"`
-	Explanation     string                `json:"explanation,omitempty"`
 	DifficultyLevel string                `json:"difficultyLevel"`
 	OrderNumber     int                   `json:"orderNumber"`
 	OptionA         string                `json:"optionA"`
@@ -65,7 +64,6 @@ type SubtestWithQuestionsResponse struct {
 type CreateQuestionInput struct {
 	QuestionText    string `json:"questionText" binding:"required"`
 	ImageURL        string `json:"imageUrl"`
-	Explanation     string `json:"explanation"`
 	DifficultyLevel string `json:"difficultyLevel" binding:"required,oneof=easy medium hard"`
 	OrderNumber     int    `json:"orderNumber" binding:"required,min=1"`
 	OptionA         string `json:"optionA" binding:"required"`
@@ -80,7 +78,6 @@ type CreateQuestionInput struct {
 type UpdateQuestionInput struct {
 	QuestionText    *string `json:"questionText"`
 	ImageURL        *string `json:"imageUrl"`
-	Explanation     *string `json:"explanation"`
 	DifficultyLevel *string `json:"difficultyLevel" binding:"omitempty,oneof=easy medium hard"`
 	OrderNumber     *int    `json:"orderNumber" binding:"omitempty,min=1"`
 	OptionA         *string `json:"optionA"`
@@ -102,7 +99,6 @@ func ToQuestionResponse(q entities.TryOutQuestion) QuestionResponse {
 		SubtestID:       q.SubtestID,
 		QuestionText:    q.QuestionText,
 		ImageURL:        q.ImageURL,
-		Explanation:     q.Explanation,
 		DifficultyLevel: string(q.DifficultyLevel),
 		OrderNumber:     q.OrderNumber,
 		OptionA:         q.OptionA,

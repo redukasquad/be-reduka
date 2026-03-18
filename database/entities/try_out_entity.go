@@ -14,6 +14,7 @@ type TryOut struct {
 	Name        string `json:"name" gorm:"size:100;not null"`
 	Description string `json:"description" gorm:"type:text"`
 	ImageURL    string `json:"imageUrl" gorm:"size:500"` // Avatar/thumbnail
+	DriveLink   string `json:"driveLink" gorm:"size:500"`
 
 	// Pricing
 	IsFree       bool    `json:"isFree" gorm:"default:false"`
