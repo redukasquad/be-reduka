@@ -15,7 +15,7 @@ type tryOutService struct {
 
 type Service interface {
 	// Try Out
-	GetAll(params dto.ListQueryParams, requestID string, isAdmin bool) (*dto.PaginatedResponse[TryOutBriefResponse], error)
+	GetAll(params dto.ListQueryParams, requestID string, isAdmin bool, tutorID uint) (*dto.PaginatedResponse[TryOutBriefResponse], error)
 	GetByID(id uint, requestID string) (*TryOutResponse, error)
 	Create(input CreateTryOutInput, requestID string, userID uint) (*TryOutResponse, error)
 	Update(id uint, input UpdateTryOutInput, requestID string, userID uint) (*TryOutResponse, error)
@@ -36,7 +36,7 @@ func NewService(repo Repository) Service {
 // Try Out Service Methods
 // ==========================================
 
-func (s *tryOutService) GetAll(params dto.ListQueryParams, requestID string, isAdmin bool) (*dto.PaginatedResponse[TryOutBriefResponse], error) {
+func (s *tryOutService) GetAll(params dto.ListQueryParams, requestID string, isAdmin bool, tutorID uint) (*dto.PaginatedResponse[TryOutBriefResponse], error) {
 	params.SetDefaults()
 
 	utils.LogInfo("tryouts", "get_all", "Fetching try outs with pagination", requestID, 0, map[string]any{
@@ -44,18 +44,19 @@ func (s *tryOutService) GetAll(params dto.ListQueryParams, requestID string, isA
 		"perPage": params.PerPage,
 		"search":  params.Q,
 		"isAdmin": isAdmin,
+		"tutorID": tutorID,
 	})
 
 	// Non-admin users only see published try outs
 	publishedOnly := !isAdmin
 
-	tryOuts, err := s.repo.FindAllPaginated(params.GetOffset(), params.PerPage, params.Q, publishedOnly)
+	tryOuts, err := s.repo.FindAllPaginated(params.GetOffset(), params.PerPage, params.Q, publishedOnly, tutorID)
 	if err != nil {
 		utils.LogError("tryouts", "get_all", "Failed to fetch try outs: "+err.Error(), requestID, 0, nil)
 		return nil, err
 	}
 
-	totalCount, err := s.repo.CountWithSearch(params.Q, publishedOnly)
+	totalCount, err := s.repo.CountWithSearch(params.Q, publishedOnly, tutorID)
 	if err != nil {
 		utils.LogError("tryouts", "get_all", "Failed to count try outs: "+err.Error(), requestID, 0, nil)
 		return nil, err

@@ -82,7 +82,19 @@ func (h *handler) GetAllTryOutsHandler(c *gin.Context) {
 		return
 	}
 
-	tryOuts, err := h.service.GetAll(params, requestID, isAdmin(c))
+	roleStr := ""
+	if role, exists := c.Get("role"); exists {
+		roleStr, _ = role.(string)
+	}
+	userID := getUserID(c)
+
+	isAdminUser := roleStr == "ADMIN"
+	var tutorID uint
+	if roleStr == "TUTOR" {
+		tutorID = userID
+	}
+
+	tryOuts, err := h.service.GetAll(params, requestID, isAdminUser, tutorID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to fetch try outs", err.Error(), nil))
 		return

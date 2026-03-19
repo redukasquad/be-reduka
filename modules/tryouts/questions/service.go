@@ -25,8 +25,8 @@ type Service interface {
 	GetSubtestsWithQuestionCount(tryOutID uint, requestID string) ([]SubtestWithQuestionsResponse, error)
 
 	// Questions
-	GetQuestionsByTryOut(tryOutID uint, requestID string) ([]QuestionResponse, error)
-	GetQuestionsBySubtest(tryOutID, subtestID uint, requestID string) ([]QuestionResponse, error)
+	GetQuestionsByTryOut(tryOutID uint, difficulty string, requestID string) ([]QuestionResponse, error)
+	GetQuestionsBySubtest(tryOutID, subtestID uint, difficulty string, requestID string) ([]QuestionResponse, error)
 	GetQuestionByID(id uint, requestID string) (*QuestionResponse, error)
 	CreateQuestion(tryOutID, subtestID uint, input CreateQuestionInput, requestID string, userID uint) (*QuestionResponse, error)
 	UpdateQuestion(id uint, input UpdateQuestionInput, requestID string, userID uint) (*QuestionResponse, error)
@@ -95,12 +95,13 @@ func (s *questionService) GetSubtestsWithQuestionCount(tryOutID uint, requestID 
 // Question Service Methods
 // ==========================================
 
-func (s *questionService) GetQuestionsByTryOut(tryOutID uint, requestID string) ([]QuestionResponse, error) {
+func (s *questionService) GetQuestionsByTryOut(tryOutID uint, difficulty string, requestID string) ([]QuestionResponse, error) {
 	utils.LogInfo("questions", "get_by_tryout", "Fetching questions by try out", requestID, 0, map[string]any{
 		"try_out_id": tryOutID,
+		"difficulty": difficulty,
 	})
 
-	questions, err := s.repo.FindByTryOutID(tryOutID)
+	questions, err := s.repo.FindByTryOutID(tryOutID, difficulty)
 	if err != nil {
 		utils.LogError("questions", "get_by_tryout", "Failed to fetch questions: "+err.Error(), requestID, 0, nil)
 		return nil, err
@@ -114,13 +115,14 @@ func (s *questionService) GetQuestionsByTryOut(tryOutID uint, requestID string) 
 	return responses, nil
 }
 
-func (s *questionService) GetQuestionsBySubtest(tryOutID, subtestID uint, requestID string) ([]QuestionResponse, error) {
+func (s *questionService) GetQuestionsBySubtest(tryOutID, subtestID uint, difficulty string, requestID string) ([]QuestionResponse, error) {
 	utils.LogInfo("questions", "get_by_subtest", "Fetching questions by subtest", requestID, 0, map[string]any{
 		"try_out_id": tryOutID,
 		"subtest_id": subtestID,
+		"difficulty": difficulty,
 	})
 
-	questions, err := s.repo.FindByTryOutAndSubtest(tryOutID, subtestID)
+	questions, err := s.repo.FindByTryOutAndSubtest(tryOutID, subtestID, difficulty)
 	if err != nil {
 		utils.LogError("questions", "get_by_subtest", "Failed to fetch questions: "+err.Error(), requestID, 0, nil)
 		return nil, err

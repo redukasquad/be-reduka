@@ -15,8 +15,8 @@ type Repository interface {
 	FindSubtestByID(id uint) (entities.Subtest, error)
 
 	// Questions
-	FindByTryOutID(tryOutID uint) ([]entities.TryOutQuestion, error)
-	FindByTryOutAndSubtest(tryOutID, subtestID uint) ([]entities.TryOutQuestion, error)
+	FindByTryOutID(tryOutID uint, difficulty string) ([]entities.TryOutQuestion, error)
+	FindByTryOutAndSubtest(tryOutID, subtestID uint, difficulty string) ([]entities.TryOutQuestion, error)
 	FindByID(id uint) (entities.TryOutQuestion, error)
 	CountByTryOutAndSubtest(tryOutID, subtestID uint) (int64, error)
 	Create(question *entities.TryOutQuestion) error
@@ -48,19 +48,29 @@ func (r *repository) FindSubtestByID(id uint) (entities.Subtest, error) {
 // Question Repository Methods
 // ==========================================
 
-func (r *repository) FindByTryOutID(tryOutID uint) ([]entities.TryOutQuestion, error) {
+func (r *repository) FindByTryOutID(tryOutID uint, difficulty string) ([]entities.TryOutQuestion, error) {
 	var questions []entities.TryOutQuestion
-	err := r.db.Where("try_out_package_id = ?", tryOutID).
-		Preload("Subtest").
+	db := r.db.Where("try_out_package_id = ?", tryOutID)
+
+	if difficulty != "" {
+		db = db.Where("difficulty_level = ?", difficulty)
+	}
+
+	err := db.Preload("Subtest").
 		Order("subtest_id ASC, order_number ASC").
 		Find(&questions).Error
 	return questions, err
 }
 
-func (r *repository) FindByTryOutAndSubtest(tryOutID, subtestID uint) ([]entities.TryOutQuestion, error) {
+func (r *repository) FindByTryOutAndSubtest(tryOutID, subtestID uint, difficulty string) ([]entities.TryOutQuestion, error) {
 	var questions []entities.TryOutQuestion
-	err := r.db.Where("try_out_package_id = ? AND subtest_id = ?", tryOutID, subtestID).
-		Preload("Subtest").
+	db := r.db.Where("try_out_package_id = ? AND subtest_id = ?", tryOutID, subtestID)
+
+	if difficulty != "" {
+		db = db.Where("difficulty_level = ?", difficulty)
+	}
+
+	err := db.Preload("Subtest").
 		Order("order_number ASC").
 		Find(&questions).Error
 	return questions, err

@@ -12,8 +12,8 @@ type repository struct {
 type Repository interface {
 	// Try Out
 	FindAll() ([]entities.TryOut, error)
-	FindAllPaginated(offset, limit int, search string, publishedOnly bool) ([]entities.TryOut, error)
-	CountWithSearch(search string, publishedOnly bool) (int64, error)
+	FindAllPaginated(offset, limit int, search string, publishedOnly bool, tutorID uint) ([]entities.TryOut, error)
+	CountWithSearch(search string, publishedOnly bool, tutorID uint) (int64, error)
 	FindByID(id uint) (entities.TryOut, error)
 	FindByName(name string) (entities.TryOut, error)
 	Create(tryOut *entities.TryOut) error
@@ -42,34 +42,44 @@ func (r *repository) FindAll() ([]entities.TryOut, error) {
 	return tryOuts, err
 }
 
-func (r *repository) FindAllPaginated(offset, limit int, search string, publishedOnly bool) ([]entities.TryOut, error) {
+func (r *repository) FindAllPaginated(offset, limit int, search string, publishedOnly bool, tutorID uint) ([]entities.TryOut, error) {
 	var tryOuts []entities.TryOut
 
 	query := r.db.Preload("Creator")
 
+	if tutorID > 0 {
+		query = query.Joins("JOIN tutor_permissions ON tutor_permissions.try_out_package_id = try_outs.id").
+			Where("tutor_permissions.user_id = ?", tutorID)
+	}
+
 	if search != "" {
-		query = query.Where("name LIKE ?", "%"+search+"%")
+		query = query.Where("try_outs.name LIKE ?", "%"+search+"%")
 	}
 
 	if publishedOnly {
-		query = query.Where("is_published = ?", true)
+		query = query.Where("try_outs.is_published = ?", true)
 	}
 
-	err := query.Offset(offset).Limit(limit).Order("created_at DESC").Find(&tryOuts).Error
+	err := query.Offset(offset).Limit(limit).Order("try_outs.created_at DESC").Find(&tryOuts).Error
 	return tryOuts, err
 }
 
-func (r *repository) CountWithSearch(search string, publishedOnly bool) (int64, error) {
+func (r *repository) CountWithSearch(search string, publishedOnly bool, tutorID uint) (int64, error) {
 	var count int64
 
 	query := r.db.Model(&entities.TryOut{})
 
+	if tutorID > 0 {
+		query = query.Joins("JOIN tutor_permissions ON tutor_permissions.try_out_package_id = try_outs.id").
+			Where("tutor_permissions.user_id = ?", tutorID)
+	}
+
 	if search != "" {
-		query = query.Where("name LIKE ?", "%"+search+"%")
+		query = query.Where("try_outs.name LIKE ?", "%"+search+"%")
 	}
 
 	if publishedOnly {
-		query = query.Where("is_published = ?", true)
+		query = query.Where("try_outs.is_published = ?", true)
 	}
 
 	err := query.Count(&count).Error

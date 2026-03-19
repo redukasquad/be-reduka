@@ -91,7 +91,9 @@ func (h *handler) GetQuestionsByTryOutHandler(c *gin.Context) {
 		return
 	}
 
-	questions, err := h.service.GetQuestionsByTryOut(uint(tryOutID), requestID)
+	difficulty := c.Query("difficulty")
+
+	questions, err := h.service.GetQuestionsByTryOut(uint(tryOutID), difficulty, requestID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to fetch questions", err.Error(), nil))
 		return
@@ -124,7 +126,9 @@ func (h *handler) GetQuestionsBySubtestHandler(c *gin.Context) {
 		return
 	}
 
-	questions, err := h.service.GetQuestionsBySubtest(uint(tryOutID), uint(subtestID), requestID)
+	difficulty := c.Query("difficulty")
+
+	questions, err := h.service.GetQuestionsBySubtest(uint(tryOutID), uint(subtestID), difficulty, requestID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to fetch questions", err.Error(), nil))
 		return
