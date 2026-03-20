@@ -20,6 +20,7 @@ type Handler interface {
 	SubmitSubtestHandler(c *gin.Context)
 	FinishAttemptHandler(c *gin.Context)
 	GetResultsHandler(c *gin.Context)
+	GetSubtestReviewHandler(c *gin.Context)
 	GetLeaderboardHandler(c *gin.Context)
 }
 
@@ -246,6 +247,41 @@ func (h *handler) GetResultsHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Results retrieved successfully", result))
+}
+
+func (h *handler) GetSubtestReviewHandler(c *gin.Context) {
+	requestID := getRequestID(c)
+	userID := getUserID(c)
+	attemptIDStr := c.Param("attemptId")
+	subtestIDStr := c.Param("subtestId")
+
+	attemptID, err := strconv.ParseUint(attemptIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Attempt ID", "ID must be a valid number", nil))
+		return
+	}
+	subtestID, err := strconv.ParseUint(subtestIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Subtest ID", "ID must be a valid number", nil))
+		return
+	}
+
+	review, err := h.service.GetSubtestReview(uint(attemptID), uint(subtestID), userID, requestID)
+	if err != nil {
+		switch err.Error() {
+		case "attempt not found", "subtest not found":
+			c.JSON(http.StatusNotFound, utils.BuildResponseFailed("Not found", err.Error(), nil))
+		case "you can only review your own attempt":
+			c.JSON(http.StatusForbidden, utils.BuildResponseFailed("Permission denied", err.Error(), nil))
+		case "attempt is not completed yet":
+			c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid state", err.Error(), nil))
+		default:
+			c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to get review", err.Error(), nil))
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Review retrieved successfully", review))
 }
 
 func (h *handler) GetLeaderboardHandler(c *gin.Context) {

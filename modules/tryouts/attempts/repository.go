@@ -29,6 +29,7 @@ type Repository interface {
 	// Answers
 	FindAnswerByAttemptAndQuestion(attemptID, questionID uint) (entities.UserTryOutAnswer, error)
 	FindAnswersByAttemptAndSubtest(attemptID, subtestID uint) ([]entities.UserTryOutAnswer, error)
+	FindAnswersByAttemptAndSubtestWithQuestion(attemptID, subtestID uint) ([]entities.UserTryOutAnswer, error)
 	CreateAnswer(answer *entities.UserTryOutAnswer) error
 	UpdateAnswer(answer *entities.UserTryOutAnswer) error
 
@@ -142,6 +143,16 @@ func (r *repository) FindAnswersByAttemptAndSubtest(attemptID, subtestID uint) (
 	var answers []entities.UserTryOutAnswer
 	err := r.db.Joins("JOIN try_out_questions ON try_out_questions.id = user_try_out_answers.question_id").
 		Where("user_try_out_answers.attempt_id = ? AND try_out_questions.subtest_id = ?", attemptID, subtestID).
+		Find(&answers).Error
+	return answers, err
+}
+
+func (r *repository) FindAnswersByAttemptAndSubtestWithQuestion(attemptID, subtestID uint) ([]entities.UserTryOutAnswer, error) {
+	var answers []entities.UserTryOutAnswer
+	err := r.db.Joins("JOIN try_out_questions ON try_out_questions.id = user_try_out_answers.question_id").
+		Where("user_try_out_answers.attempt_id = ? AND try_out_questions.subtest_id = ?", attemptID, subtestID).
+		Preload("Question").
+		Order("try_out_questions.order_number ASC").
 		Find(&answers).Error
 	return answers, err
 }

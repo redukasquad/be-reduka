@@ -33,6 +33,9 @@ type Service interface {
 	// Finish attempt
 	FinishAttempt(attemptID uint, userID uint, requestID string) (*AttemptResponse, error)
 
+	// Review
+	GetSubtestReview(attemptID, subtestID uint, userID uint, requestID string) (*SubtestReviewResponse, error)
+
 	// Leaderboard
 	GetLeaderboard(tryOutID uint, requestID string) ([]LeaderboardEntryResponse, error)
 }
@@ -481,7 +484,7 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 		return nil, errors.New("attempt is already completed")
 	}
 
-	// Calculate total score from all subtest results
+	// Calculate total score = sum of all subtest finalScores
 	results, err := s.repo.FindSubtestResultsByAttemptID(attemptID)
 	if err != nil {
 		return nil, err
@@ -492,9 +495,6 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 		if r.FinalScore != nil {
 			totalScore += *r.FinalScore
 		}
-	}
-	if len(results) > 0 {
-		totalScore = totalScore / float64(len(results))
 	}
 
 	now := time.Now()
@@ -515,6 +515,77 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 	finishedAttempt, _ := s.repo.FindAttemptByID(attemptID)
 	response := ToAttemptResponse(finishedAttempt)
 	return &response, nil
+}
+
+// ==========================================
+// Review
+// ==========================================
+
+func (s *attemptService) GetSubtestReview(attemptID, subtestID uint, userID uint, requestID string) (*SubtestReviewResponse, error) {
+	attempt, err := s.repo.FindAttemptByID(attemptID)
+	if err != nil {
+		return nil, errors.New("attempt not found")
+	}
+	if attempt.Registration.UserID != userID {
+		return nil, errors.New("you can only review your own attempt")
+	}
+	if attempt.Status != entities.AttemptStatusCompleted {
+		return nil, errors.New("attempt is not completed yet")
+	}
+
+	subtest, err := s.repo.FindSubtestByID(subtestID)
+	if err != nil {
+		return nil, errors.New("subtest not found")
+	}
+
+	// Get all questions for this subtest
+	tryOutID := attempt.Registration.TryOutPackageID
+	questions, err := s.repo.FindQuestionsByTryOutAndSubtest(tryOutID, subtestID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get user answers (with question preloaded)
+	answers, err := s.repo.FindAnswersByAttemptAndSubtestWithQuestion(attemptID, subtestID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Build answer map: questionID → answer
+	answerMap := make(map[uint]entities.UserTryOutAnswer)
+	for _, a := range answers {
+		answerMap[a.QuestionID] = a
+	}
+
+	var reviewItems []QuestionReviewResponse
+	for _, q := range questions {
+		item := QuestionReviewResponse{
+			ID:              q.ID,
+			OrderNumber:     q.OrderNumber,
+			QuestionText:    q.QuestionText,
+			ImageURL:        q.ImageURL,
+			DifficultyLevel: string(q.DifficultyLevel),
+			OptionA:         q.OptionA,
+			OptionB:         q.OptionB,
+			OptionC:         q.OptionC,
+			OptionD:         q.OptionD,
+			OptionE:         q.OptionE,
+			CorrectOption:   q.CorrectOption,
+			Explanation:     q.Explanation,
+		}
+		if ans, ok := answerMap[q.ID]; ok {
+			item.SelectedOption = ans.SelectedOption
+			item.IsCorrect = ans.IsCorrect
+		}
+		reviewItems = append(reviewItems, item)
+	}
+
+	return &SubtestReviewResponse{
+		SubtestID:   subtest.ID,
+		SubtestCode: subtest.Code,
+		SubtestName: subtest.Name,
+		Questions:   reviewItems,
+	}, nil
 }
 
 // ==========================================

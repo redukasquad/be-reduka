@@ -12,17 +12,25 @@ import (
 
 // RegistrationResponse is the response DTO for a registration
 type RegistrationResponse struct {
-	ID              uint                 `json:"id"`
-	TryOutID        uint                 `json:"tryOutId"`
-	TryOut          *TryOutBriefResponse `json:"tryOut,omitempty"`
-	User            *UserBriefResponse   `json:"user,omitempty"`
-	PaymentProofURL string               `json:"paymentProofUrl,omitempty"`
-	PaymentStatus   string               `json:"paymentStatus"`
-	RejectionReason string               `json:"rejectionReason,omitempty"`
-	ApprovedBy      *UserBriefResponse   `json:"approvedBy,omitempty"`
-	ApprovedAt      *time.Time           `json:"approvedAt,omitempty"`
-	RegisteredAt    time.Time            `json:"registeredAt"`
-	HasAttempt      bool                 `json:"hasAttempt"`
+	ID              uint                  `json:"id"`
+	TryOutID        uint                  `json:"tryOutId"`
+	TryOut          *TryOutBriefResponse  `json:"tryOut,omitempty"`
+	User            *UserBriefResponse    `json:"user,omitempty"`
+	PaymentProofURL string                `json:"paymentProofUrl,omitempty"`
+	PaymentStatus   string                `json:"paymentStatus"`
+	RejectionReason string                `json:"rejectionReason,omitempty"`
+	ApprovedBy      *UserBriefResponse    `json:"approvedBy,omitempty"`
+	ApprovedAt      *time.Time            `json:"approvedAt,omitempty"`
+	RegisteredAt    time.Time             `json:"registeredAt"`
+	HasAttempt      bool                  `json:"hasAttempt"`
+	Attempt         *AttemptBriefResponse `json:"attempt,omitempty"`
+}
+
+// AttemptBriefResponse is a minimal attempt info for registration response
+type AttemptBriefResponse struct {
+	ID         uint     `json:"id"`
+	Status     string   `json:"status"`
+	TotalScore *float64 `json:"totalScore,omitempty"`
 }
 
 // TryOutBriefResponse is a minimal try out info
@@ -76,6 +84,15 @@ func ToRegistrationResponse(r entities.TryOutRegistration) RegistrationResponse 
 		ApprovedAt:      r.ApprovedAt,
 		RegisteredAt:    r.RegisteredAt,
 		HasAttempt:      r.Attempt != nil,
+	}
+
+	if r.Attempt != nil {
+		attempt := AttemptBriefResponse{
+			ID:         r.Attempt.ID,
+			Status:     string(r.Attempt.Status),
+			TotalScore: r.Attempt.TotalScore,
+		}
+		response.Attempt = &attempt
 	}
 
 	if r.TryOutPackage.ID != 0 {

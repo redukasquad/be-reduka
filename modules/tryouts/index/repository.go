@@ -23,6 +23,8 @@ type Repository interface {
 	// Tutor Permissions
 	FindTutorPermissions(tryOutID uint) ([]entities.TutorPermission, error)
 	FindTutorPermission(tryOutID, userID uint) (entities.TutorPermission, error)
+	FindTutorPermissionUnscoped(tryOutID, userID uint) (entities.TutorPermission, error)
+	RestoreTutorPermission(id uint) error
 	CreateTutorPermission(permission *entities.TutorPermission) error
 	DeleteTutorPermission(tryOutID, userID uint) error
 	HasTutorPermission(tryOutID, userID uint) (bool, error)
@@ -130,6 +132,22 @@ func (r *repository) FindTutorPermission(tryOutID, userID uint) (entities.TutorP
 		Preload("GrantedBy").
 		First(&permission).Error
 	return permission, err
+}
+
+// FindTutorPermissionUnscoped finds a permission including soft-deleted ones
+func (r *repository) FindTutorPermissionUnscoped(tryOutID, userID uint) (entities.TutorPermission, error) {
+	var permission entities.TutorPermission
+	err := r.db.Unscoped().
+		Where("try_out_package_id = ? AND user_id = ?", tryOutID, userID).
+		First(&permission).Error
+	return permission, err
+}
+
+// RestoreTutorPermission clears deleted_at to restore a soft-deleted permission
+func (r *repository) RestoreTutorPermission(id uint) error {
+	return r.db.Unscoped().Model(&entities.TutorPermission{}).
+		Where("id = ?", id).
+		Update("deleted_at", nil).Error
 }
 
 func (r *repository) CreateTutorPermission(permission *entities.TutorPermission) error {

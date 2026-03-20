@@ -96,7 +96,32 @@ type LeaderboardEntryResponse struct {
 	FinishedAt *time.Time `json:"finishedAt,omitempty"`
 }
 
-// SubmitAnswerInput is the input for submitting an answer
+// QuestionReviewResponse shows a question with user's answer and correct answer for review
+type QuestionReviewResponse struct {
+	ID              uint    `json:"id"`
+	OrderNumber     int     `json:"orderNumber"`
+	QuestionText    string  `json:"questionText"`
+	ImageURL        string  `json:"imageUrl,omitempty"`
+	DifficultyLevel string  `json:"difficultyLevel"`
+	OptionA         string  `json:"optionA"`
+	OptionB         string  `json:"optionB"`
+	OptionC         string  `json:"optionC"`
+	OptionD         string  `json:"optionD"`
+	OptionE         string  `json:"optionE"`
+	CorrectOption   string  `json:"correctOption"`
+	SelectedOption  *string `json:"selectedOption"` // null if unanswered
+	IsCorrect       *bool   `json:"isCorrect"`
+	Explanation     string  `json:"explanation,omitempty"`
+}
+
+// SubtestReviewResponse shows all questions with answers for a subtest
+type SubtestReviewResponse struct {
+	SubtestID   uint                     `json:"subtestId"`
+	SubtestCode string                   `json:"subtestCode"`
+	SubtestName string                   `json:"subtestName"`
+	Questions   []QuestionReviewResponse `json:"questions"`
+}
+
 type SubmitAnswerInput struct {
 	QuestionID     uint   `json:"questionId" binding:"required"`
 	SelectedOption string `json:"selectedOption" binding:"omitempty,oneof=A B C D E"`

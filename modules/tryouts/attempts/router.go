@@ -22,6 +22,7 @@ func AttemptRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, require
 		attemptRoutes.POST("/:attemptId/subtests/:subtestId/submit", handler.SubmitSubtestHandler)
 		attemptRoutes.POST("/:attemptId/finish", handler.FinishAttemptHandler)
 		attemptRoutes.GET("/:attemptId/results", handler.GetResultsHandler)
+		attemptRoutes.GET("/:attemptId/subtests/:subtestId/review", handler.GetSubtestReviewHandler)
 	}
 
 	// Public leaderboard

@@ -129,7 +129,7 @@ func (s *tryOutService) Create(input CreateTryOutInput, requestID string, userID
 		ImageURL:          input.ImageURL,
 		IsFree:            input.IsFree,
 		Price:             input.Price,
-		DriveLink :		   input.DriveLink,
+		DriveLink:         input.DriveLink,
 		QrisImageURL:      input.QrisImageURL,
 		PaymentLink:       input.PaymentLink,
 		RegistrationStart: input.RegistrationStart,
@@ -216,7 +216,6 @@ func (s *tryOutService) Update(id uint, input UpdateTryOutInput, requestID strin
 	if input.IsPublished != nil {
 		tryOut.IsPublished = *input.IsPublished
 	}
-	
 
 	// Validate registration dates
 	if tryOut.RegistrationEnd.Before(tryOut.RegistrationStart) {
@@ -316,9 +315,28 @@ func (s *tryOutService) GrantTutorPermission(tryOutID uint, input GrantTutorPerm
 		return nil, err
 	}
 
-	// Check if permission already exists
-	_, err = s.repo.FindTutorPermission(tryOutID, input.UserID)
+	// Check including soft-deleted records to avoid unique constraint violation
+	existing, err := s.repo.FindTutorPermissionUnscoped(tryOutID, input.UserID)
 	if err == nil {
+		// Record exists
+		if existing.DeletedAt.Valid {
+			// Was soft-deleted — restore it
+			if err := s.repo.RestoreTutorPermission(existing.ID); err != nil {
+				return nil, err
+			}
+			// Fetch restored with preload
+			restored, err := s.repo.FindTutorPermission(tryOutID, input.UserID)
+			if err != nil {
+				return nil, err
+			}
+			utils.LogSuccess("tryouts", "grant_tutor_permission", "Permission restored successfully", requestID, grantedByUserID, map[string]any{
+				"try_out_id": tryOutID,
+				"user_id":    input.UserID,
+			})
+			response := toTutorPermissionResponse(restored)
+			return &response, nil
+		}
+		// Active record exists
 		return nil, errors.New("tutor already has permission for this try out")
 	}
 
