@@ -66,7 +66,7 @@ func main() {
 		auth.AuthRouter(v1)
 		users.UserRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
 		programs.ProgramRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
-		courses.CoursesRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin())
+		courses.CoursesRouter(v1, middleware.RequireAuth(), middleware.RequireAdmin(), middleware.RequireAdminOrTutor())
 		classes.ClassesRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutor())
 		tryouts.TryOutsRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutor())
 		uploads.UploadRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutorOrUser())

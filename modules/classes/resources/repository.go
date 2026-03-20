@@ -10,10 +10,10 @@ type repository struct {
 }
 
 type Repository interface {
-	FindByLessonID(lessonID uint) ([]entities.ClassLessonResource, error)
-	FindByID(id uint) (entities.ClassLessonResource, error)
-	Create(resource *entities.ClassLessonResource) error
-	Update(resource *entities.ClassLessonResource) error
+	FindByLessonID(lessonID uint) ([]entities.LessonResource, error)
+	FindByID(id uint) (entities.LessonResource, error)
+	Create(resource *entities.LessonResource) error
+	Update(resource *entities.LessonResource) error
 	Delete(id uint) error
 }
 
@@ -21,26 +21,26 @@ func NewRepository(db *gorm.DB) Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) FindByLessonID(lessonID uint) ([]entities.ClassLessonResource, error) {
-	var resources []entities.ClassLessonResource
-	err := r.db.Where("class_lesson_id = ?", lessonID).Find(&resources).Error
+func (r *repository) FindByLessonID(lessonID uint) ([]entities.LessonResource, error) {
+	var resources []entities.LessonResource
+	err := r.db.Where("lesson_id = ?", lessonID).Find(&resources).Error
 	return resources, err
 }
 
-func (r *repository) FindByID(id uint) (entities.ClassLessonResource, error) {
-	var resource entities.ClassLessonResource
-	err := r.db.Preload("ClassLesson").First(&resource, id).Error
+func (r *repository) FindByID(id uint) (entities.LessonResource, error) {
+	var resource entities.LessonResource
+	err := r.db.Preload("Lesson").First(&resource, id).Error
 	return resource, err
 }
 
-func (r *repository) Create(resource *entities.ClassLessonResource) error {
+func (r *repository) Create(resource *entities.LessonResource) error {
 	return r.db.Create(resource).Error
 }
 
-func (r *repository) Update(resource *entities.ClassLessonResource) error {
+func (r *repository) Update(resource *entities.LessonResource) error {
 	return r.db.Save(resource).Error
 }
 
 func (r *repository) Delete(id uint) error {
-	return r.db.Delete(&entities.ClassLessonResource{}, id).Error
+	return r.db.Delete(&entities.LessonResource{}, id).Error
 }

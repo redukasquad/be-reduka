@@ -5,7 +5,7 @@ import (
 	"github.com/redukasquad/be-reduka/database/migrations"
 )
 
-func RegistrationRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
+func RegistrationRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc, requireAdminOrTutor gin.HandlerFunc) {
 	regRepo := NewRepository(migrations.GetDB())
 	regService := NewService(regRepo)
 	regHandler := NewHandler(regService)
@@ -13,13 +13,13 @@ func RegistrationRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, re
 	registrations := router.Group("/registrations")
 	{
 		registrations.GET("/me", requireAuth, regHandler.GetMyRegistrationsHandler)
-		registrations.PUT("/:id/approve", requireAuth, requireAdmin, regHandler.ApproveRegistrationHandler)
-		registrations.PUT("/:id/reject", requireAuth, requireAdmin, regHandler.RejectRegistrationHandler)
+		registrations.PUT("/:id/approve", requireAuth, requireAdminOrTutor, regHandler.ApproveRegistrationHandler)
+		registrations.PUT("/:id/reject", requireAuth, requireAdminOrTutor, regHandler.RejectRegistrationHandler)
 	}
 
 	courseRegistrations := router.Group("/courses/:id")
 	{
 		courseRegistrations.POST("/register", requireAuth, regHandler.RegisterHandler)
-		courseRegistrations.GET("/registrations", requireAuth, requireAdmin, regHandler.GetRegistrationsByCourseHandler)
+		courseRegistrations.GET("/registrations", requireAuth, requireAdminOrTutor, regHandler.GetRegistrationsByCourseHandler)
 	}
 }

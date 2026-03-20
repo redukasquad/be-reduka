@@ -2,7 +2,7 @@ package entities
 
 import "gorm.io/gorm"
 
-type ClassSubject struct {
+type Class struct {
 	gorm.Model
 
 	CourseID    uint   `json:"courseId" form:"courseId" binding:"required"`
@@ -10,6 +10,6 @@ type ClassSubject struct {
 	Description string `json:"description" form:"description"`
 
 	// relations
-	Course  Course        `json:"course,omitempty"`
-	Lessons []ClassLesson `json:"lessons,omitempty" gorm:"foreignKey:SubjectID"`
+	Course  Course   `json:"course,omitempty"`
+	Lessons []Lesson `json:"lessons,omitempty" gorm:"foreignKey:ClassID"`
 }

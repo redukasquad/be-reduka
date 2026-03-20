@@ -10,16 +10,19 @@ func SubjectRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, require
 	subjectService := NewService(subjectRepo)
 	subjectHandler := NewHandler(subjectService)
 
-	courseSubjects := router.Group("/courses/:id")
-	{
-		courseSubjects.GET("/subjects", subjectHandler.GetSubjectsByCourseHandler)
-		courseSubjects.POST("/subjects", requireAuth, requireAdminOrTutor, subjectHandler.CreateSubjectHandler)
-	}
+	// NOTE: /courses/:id/classes is registered in CourseIndexRouter to avoid Gin wildcard conflict
 
-	subjects := router.Group("/subjects")
+	classes := router.Group("/classes")
 	{
-		subjects.GET("/:id", subjectHandler.GetSubjectByIDHandler)
-		subjects.PUT("/:id", requireAuth, requireAdminOrTutor, subjectHandler.UpdateSubjectHandler)
-		subjects.DELETE("/:id", requireAuth, requireAdminOrTutor, subjectHandler.DeleteSubjectHandler)
+		classes.GET("/:id", subjectHandler.GetSubjectByIDHandler)
+		classes.PUT("/:id", requireAuth, requireAdminOrTutor, subjectHandler.UpdateSubjectHandler)
+		classes.DELETE("/:id", requireAuth, requireAdminOrTutor, subjectHandler.DeleteSubjectHandler)
 	}
+}
+
+// RegisterCourseSubRoutes registers /courses/:id/classes under an existing courseByID group
+// to avoid Gin wildcard conflicts.
+func RegisterCourseSubRoutes(courseByID *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdminOrTutor gin.HandlerFunc, h Handler) {
+	courseByID.GET("/classes", h.GetSubjectsByCourseHandler)
+	courseByID.POST("/classes", requireAuth, requireAdminOrTutor, h.CreateSubjectHandler)
 }

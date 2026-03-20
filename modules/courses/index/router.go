@@ -3,9 +3,10 @@ package courses
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redukasquad/be-reduka/database/migrations"
+	"github.com/redukasquad/be-reduka/modules/classes/subjects"
 )
 
-func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
+func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc, requireAdminOrTutor gin.HandlerFunc) {
 	courseRepo := NewRepository(migrations.GetDB())
 	courseService := NewService(courseRepo)
 	courseHandler := NewHandler(courseService)
@@ -13,15 +14,25 @@ func CourseIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 	courses := router.Group("/courses")
 	{
 		courses.GET("", courseHandler.GetAllCoursesHandler)
-		courses.POST("", requireAuth, requireAdmin, courseHandler.CreateCourseHandler)
+		courses.POST("", requireAuth, requireAdminOrTutor, courseHandler.CreateCourseHandler)
 	}
 
-	courseByID := router.Group("/courses")
+	// Single group for /courses/:id to avoid Gin wildcard conflicts
+	courseByID := router.Group("/courses/:id")
 	{
-		courseByID.GET("/:id", courseHandler.GetCourseByIDHandler)
-		courseByID.PUT("/:id", requireAuth, requireAdmin, courseHandler.UpdateCourseHandler)
-		courseByID.DELETE("/:id", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
+		courseByID.GET("", courseHandler.GetCourseByIDHandler)
+		courseByID.PUT("", requireAuth, requireAdmin, courseHandler.UpdateCourseHandler)
+		courseByID.DELETE("", requireAuth, requireAdmin, courseHandler.DeleteCourseHandler)
+
+		// Register /courses/:id/classes here to share the same wildcard group
+		subjectRepo := subjects.NewRepository(migrations.GetDB())
+		subjectSvc := subjects.NewService(subjectRepo)
+		subjectHandler := subjects.NewHandler(subjectSvc)
+		subjects.RegisterCourseSubRoutes(courseByID, requireAuth, requireAdminOrTutor, subjectHandler)
 	}
+
+	// Tutor: lihat courses milik sendiri
+	router.GET("/tutor/my-courses", requireAuth, requireAdminOrTutor, courseHandler.GetMyCoursesTutorHandler)
 
 	router.GET("/programs/:id/courses", courseHandler.GetCoursesByProgramIDHandler)
 }

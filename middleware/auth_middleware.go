@@ -71,10 +71,10 @@ func RequireAuthorization(allowedRoles ...string) gin.HandlerFunc {
 		if user.Role != nil {
 			userRole = *user.Role
 		}
-		
+
 		fmt.Println("USER ROLE:", userRole)
 		fmt.Println("ALLOWED ROLES:", allowedRoles)
-		
+
 		for _, role := range allowedRoles {
 			if strings.EqualFold(userRole, role) {
 				hasRole = true
@@ -88,7 +88,50 @@ func RequireAuthorization(allowedRoles ...string) gin.HandlerFunc {
 		}
 
 		// Set user role in context for later use
+		c.Set("role", userRole)
 		c.Set("user_role", userRole)
+		c.Next()
+	}
+}
+
+func OptionalAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.Next()
+			return
+		}
+
+		tokenString := strings.Replace(authHeader, "Bearer ", "", 1)
+		token, err := utils.ValidateToken(tokenString)
+		if err != nil || !token.Valid {
+			c.Next()
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			c.Next()
+			return
+		}
+
+		userIDFloat, ok := claims["user_id"].(float64)
+		if !ok {
+			c.Next()
+			return
+		}
+
+		userID := int(userIDFloat)
+		c.Set("user_id", userID)
+
+		// Load role from DB
+		userRepo := users.NewRepository(migrations.GetDB())
+		user, err := userRepo.FindByID(userID)
+		if err == nil && user.Role != nil {
+			c.Set("role", *user.Role)
+			c.Set("user_role", *user.Role)
+		}
+
 		c.Next()
 	}
 }

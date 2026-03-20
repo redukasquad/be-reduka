@@ -18,6 +18,7 @@ type Repository interface {
 	FindByTryOutID(tryOutID uint) ([]entities.TryOutRegistration, error)
 	Create(registration *entities.TryOutRegistration) error
 	Update(registration *entities.TryOutRegistration) error
+	Delete(id uint) error
 
 	// Try Out
 	FindTryOutByID(id uint) (entities.TryOut, error)
@@ -33,7 +34,7 @@ func NewRepository(db *gorm.DB) Repository {
 
 func (r *repository) FindByID(id uint) (entities.TryOutRegistration, error) {
 	var registration entities.TryOutRegistration
-	err := r.db.Preload("TryOut").
+	err := r.db.Preload("TryOutPackage").
 		Preload("User").
 		Preload("ApprovedBy").
 		Preload("Attempt").
@@ -44,7 +45,7 @@ func (r *repository) FindByID(id uint) (entities.TryOutRegistration, error) {
 func (r *repository) FindByUserAndTryOut(userID, tryOutID uint) (entities.TryOutRegistration, error) {
 	var registration entities.TryOutRegistration
 	err := r.db.Where("user_id = ? AND try_out_package_id = ?", userID, tryOutID).
-		Preload("TryOut").
+		Preload("TryOutPackage").
 		Preload("User").
 		Preload("ApprovedBy").
 		Preload("Attempt").
@@ -55,7 +56,7 @@ func (r *repository) FindByUserAndTryOut(userID, tryOutID uint) (entities.TryOut
 func (r *repository) FindByUserID(userID uint) ([]entities.TryOutRegistration, error) {
 	var registrations []entities.TryOutRegistration
 	err := r.db.Where("user_id = ?", userID).
-		Preload("TryOut").
+		Preload("TryOutPackage").
 		Preload("User").
 		Preload("ApprovedBy").
 		Preload("Attempt").
@@ -68,7 +69,7 @@ func (r *repository) FindPendingPayments() ([]entities.TryOutRegistration, error
 	var registrations []entities.TryOutRegistration
 	err := r.db.Where("payment_status = ?", "pending").
 		Where("payment_proof_url IS NOT NULL AND payment_proof_url != ''").
-		Preload("TryOut").
+		Preload("TryOutPackage").
 		Preload("User").
 		Order("registered_at ASC").
 		Find(&registrations).Error
@@ -102,4 +103,8 @@ func (r *repository) FindTryOutByID(id uint) (entities.TryOut, error) {
 	var tryOut entities.TryOut
 	err := r.db.First(&tryOut, id).Error
 	return tryOut, err
+}
+
+func (r *repository) Delete(id uint) error {
+	return r.db.Delete(&entities.TryOutRegistration{}, id).Error
 }

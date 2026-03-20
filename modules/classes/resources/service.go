@@ -36,7 +36,7 @@ func (s *resourceService) GetByLessonID(lessonID uint, requestID string) ([]Reso
 
 	var responses []ResourceResponse
 	for _, res := range resources {
-		responses = append(responses, s.toResourceResponse(res))
+		responses = append(responses, s.toResponse(res))
 	}
 
 	utils.LogSuccess("resources", "get_by_lesson", "Successfully fetched resources", requestID, 0, map[string]any{
@@ -52,11 +52,11 @@ func (s *resourceService) Create(lessonID uint, input CreateResourceInput, reque
 		"type":      input.Type,
 	})
 
-	resource := &entities.ClassLessonResource{
-		ClassLessonID: lessonID,
-		Type:          input.Type,
-		Title:         input.Title,
-		URL:           input.URL,
+	resource := &entities.LessonResource{
+		LessonID: lessonID,
+		Type:     input.Type,
+		Title:    input.Title,
+		URL:      input.URL,
 	}
 
 	if err := s.repo.Create(resource); err != nil {
@@ -66,10 +66,9 @@ func (s *resourceService) Create(lessonID uint, input CreateResourceInput, reque
 
 	utils.LogSuccess("resources", "create", "Resource created successfully", requestID, userID, map[string]any{
 		"resource_id": resource.ID,
-		"type":        resource.Type,
 	})
 
-	response := s.toResourceResponse(*resource)
+	response := s.toResponse(*resource)
 	return &response, nil
 }
 
@@ -81,9 +80,6 @@ func (s *resourceService) Update(id uint, input UpdateResourceInput, requestID s
 	resource, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.LogWarning("resources", "update", "Resource not found", requestID, userID, map[string]any{
-				"resource_id": id,
-			})
 			return nil, errors.New("resource not found")
 		}
 		return nil, err
@@ -104,11 +100,7 @@ func (s *resourceService) Update(id uint, input UpdateResourceInput, requestID s
 		return nil, err
 	}
 
-	utils.LogSuccess("resources", "update", "Resource updated successfully", requestID, userID, map[string]any{
-		"resource_id": id,
-	})
-
-	response := s.toResourceResponse(resource)
+	response := s.toResponse(resource)
 	return &response, nil
 }
 
@@ -120,9 +112,6 @@ func (s *resourceService) Delete(id uint, requestID string, userID uint) error {
 	_, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.LogWarning("resources", "delete", "Resource not found", requestID, userID, map[string]any{
-				"resource_id": id,
-			})
 			return errors.New("resource not found")
 		}
 		return err
@@ -133,23 +122,20 @@ func (s *resourceService) Delete(id uint, requestID string, userID uint) error {
 		return err
 	}
 
-	utils.LogSuccess("resources", "delete", "Resource deleted successfully", requestID, userID, map[string]any{
-		"resource_id": id,
-	})
 	return nil
 }
 
-func (s *resourceService) toResourceResponse(res entities.ClassLessonResource) ResourceResponse {
+func (s *resourceService) toResponse(res entities.LessonResource) ResourceResponse {
 	response := ResourceResponse{
-		ID:            res.ID,
-		ClassLessonID: res.ClassLessonID,
-		Type:          res.Type,
-		Title:         res.Title,
-		URL:           res.URL,
+		ID:       res.ID,
+		LessonID: res.LessonID,
+		Type:     res.Type,
+		Title:    res.Title,
+		URL:      res.URL,
 	}
 
-	if res.ClassLesson.ID != 0 {
-		response.LessonTitle = res.ClassLesson.Title
+	if res.Lesson.ID != 0 {
+		response.LessonTitle = res.Lesson.Title
 	}
 
 	return response

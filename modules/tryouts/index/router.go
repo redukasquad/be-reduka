@@ -3,6 +3,7 @@ package tryouts
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/redukasquad/be-reduka/database/migrations"
+	"github.com/redukasquad/be-reduka/middleware"
 )
 
 func TryOutIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireAdmin gin.HandlerFunc) {
@@ -10,8 +11,9 @@ func TryOutIndexRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, req
 	service := NewService(repo)
 	handler := NewHandler(service)
 
-	// Public endpoints (anyone can view published try outs)
+	// Public endpoints (anyone can view published try outs, admin sees all)
 	tryouts := router.Group("/tryouts")
+	tryouts.Use(middleware.OptionalAuth())
 	{
 		tryouts.GET("", handler.GetAllTryOutsHandler)
 		tryouts.GET("/:id", handler.GetTryOutByIDHandler)

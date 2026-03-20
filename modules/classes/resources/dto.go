@@ -13,10 +13,10 @@ type UpdateResourceInput struct {
 }
 
 type ResourceResponse struct {
-	ID            uint   `json:"id"`
-	ClassLessonID uint   `json:"classLessonId"`
-	LessonTitle   string `json:"lessonTitle,omitempty"`
-	Type          string `json:"type"`
-	Title         string `json:"title"`
-	URL           string `json:"url"`
+	ID          uint   `json:"id"`
+	LessonID    uint   `json:"lessonId"`
+	LessonTitle string `json:"lessonTitle,omitempty"`
+	Type        string `json:"type"`
+	Title       string `json:"title"`
+	URL         string `json:"url"`
 }

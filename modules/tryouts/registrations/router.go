@@ -10,37 +10,37 @@ func RegistrationRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, re
 	service := NewService(repo)
 	handler := NewHandler(service)
 
-	// User endpoints - require auth
+	// User: register for a tryout
 	userRoutes := router.Group("/tryouts")
 	userRoutes.Use(requireAuth)
 	{
-		// Register for a try out
 		userRoutes.POST("/:id/register", handler.RegisterHandler)
-	}
-
-	// User registration management
-	regRoutes := router.Group("/tryouts/registrations")
-	regRoutes.Use(requireAuth)
-	{
-		regRoutes.POST("/:id/payment-proof", handler.UploadPaymentProofHandler)
 	}
 
 	// Get my registrations
 	router.GET("/users/me/tryout-registrations", requireAuth, handler.GetMyRegistrationsHandler)
 
-	// Admin endpoints
+	// Admin: get registrations for a tryout
 	adminRoutes := router.Group("/tryouts")
 	adminRoutes.Use(requireAuth, requireAdmin)
 	{
-		// Get registrations for a try out
 		adminRoutes.GET("/:id/registrations", handler.GetRegistrationsByTryOutHandler)
 	}
 
+	// User: upload payment proof — path /payment-proof/:id to avoid wildcard conflict with DELETE /:id
+	proofRoutes := router.Group("/tryouts/registrations")
+	proofRoutes.Use(requireAuth)
+	{
+		proofRoutes.POST("/payment-proof/:id", handler.UploadPaymentProofHandler)
+	}
+
+	// Admin: manage registrations — separate group, no wildcard conflict
 	adminRegRoutes := router.Group("/tryouts/registrations")
 	adminRegRoutes.Use(requireAuth, requireAdmin)
 	{
 		adminRegRoutes.GET("/pending", handler.GetPendingPaymentsHandler)
 		adminRegRoutes.PUT("/:id/approve", handler.ApprovePaymentHandler)
 		adminRegRoutes.PUT("/:id/reject", handler.RejectPaymentHandler)
+		adminRegRoutes.DELETE("/:id", handler.DeleteRegistrationHandler)
 	}
 }

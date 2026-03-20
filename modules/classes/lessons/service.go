@@ -13,9 +13,9 @@ type lessonService struct {
 }
 
 type Service interface {
-	GetBySubjectID(subjectID uint, requestID string) ([]LessonResponse, error)
+	GetByClassID(classID uint, requestID string) ([]LessonResponse, error)
 	GetByID(id uint, requestID string) (*LessonResponse, error)
-	Create(subjectID uint, input CreateLessonInput, requestID string, userID uint) (*LessonResponse, error)
+	Create(classID uint, input CreateLessonInput, requestID string, userID uint) (*LessonResponse, error)
 	Update(id uint, input UpdateLessonInput, requestID string, userID uint) (*LessonResponse, error)
 	Delete(id uint, requestID string, userID uint) error
 }
@@ -24,25 +24,25 @@ func NewService(repo Repository) Service {
 	return &lessonService{repo: repo}
 }
 
-func (s *lessonService) GetBySubjectID(subjectID uint, requestID string) ([]LessonResponse, error) {
-	utils.LogInfo("lessons", "get_by_subject", "Fetching lessons for subject", requestID, 0, map[string]any{
-		"subject_id": subjectID,
+func (s *lessonService) GetByClassID(classID uint, requestID string) ([]LessonResponse, error) {
+	utils.LogInfo("lessons", "get_by_class", "Fetching lessons for class", requestID, 0, map[string]any{
+		"class_id": classID,
 	})
 
-	lessons, err := s.repo.FindBySubjectID(subjectID)
+	lessons, err := s.repo.FindByClassID(classID)
 	if err != nil {
-		utils.LogError("lessons", "get_by_subject", "Failed to fetch lessons: "+err.Error(), requestID, 0, nil)
+		utils.LogError("lessons", "get_by_class", "Failed to fetch lessons: "+err.Error(), requestID, 0, nil)
 		return nil, err
 	}
 
 	var responses []LessonResponse
 	for _, lesson := range lessons {
-		responses = append(responses, s.toLessonResponse(lesson, false))
+		responses = append(responses, s.toResponse(lesson, false))
 	}
 
-	utils.LogSuccess("lessons", "get_by_subject", "Successfully fetched lessons", requestID, 0, map[string]any{
-		"subject_id": subjectID,
-		"count":      len(responses),
+	utils.LogSuccess("lessons", "get_by_class", "Successfully fetched lessons", requestID, 0, map[string]any{
+		"class_id": classID,
+		"count":    len(responses),
 	})
 	return responses, nil
 }
@@ -55,30 +55,24 @@ func (s *lessonService) GetByID(id uint, requestID string) (*LessonResponse, err
 	lesson, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.LogWarning("lessons", "get_by_id", "Lesson not found", requestID, 0, map[string]any{
-				"lesson_id": id,
-			})
 			return nil, errors.New("lesson not found")
 		}
 		utils.LogError("lessons", "get_by_id", "Failed to fetch lesson: "+err.Error(), requestID, 0, nil)
 		return nil, err
 	}
 
-	response := s.toLessonResponse(lesson, true)
-	utils.LogSuccess("lessons", "get_by_id", "Successfully fetched lesson", requestID, 0, map[string]any{
-		"lesson_id": id,
-	})
+	response := s.toResponse(lesson, true)
 	return &response, nil
 }
 
-func (s *lessonService) Create(subjectID uint, input CreateLessonInput, requestID string, userID uint) (*LessonResponse, error) {
+func (s *lessonService) Create(classID uint, input CreateLessonInput, requestID string, userID uint) (*LessonResponse, error) {
 	utils.LogInfo("lessons", "create", "Creating new lesson", requestID, userID, map[string]any{
-		"subject_id": subjectID,
-		"title":      input.Title,
+		"class_id": classID,
+		"title":    input.Title,
 	})
 
-	lesson := &entities.ClassLesson{
-		SubjectID:       subjectID,
+	lesson := &entities.Lesson{
+		ClassID:         classID,
 		CreatedByUserID: userID,
 		Title:           input.Title,
 		Description:     input.Description,
@@ -97,7 +91,7 @@ func (s *lessonService) Create(subjectID uint, input CreateLessonInput, requestI
 		"title":     lesson.Title,
 	})
 
-	response := s.toLessonResponse(*lesson, false)
+	response := s.toResponse(*lesson, false)
 	return &response, nil
 }
 
@@ -109,9 +103,6 @@ func (s *lessonService) Update(id uint, input UpdateLessonInput, requestID strin
 	lesson, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.LogWarning("lessons", "update", "Lesson not found", requestID, userID, map[string]any{
-				"lesson_id": id,
-			})
 			return nil, errors.New("lesson not found")
 		}
 		return nil, err
@@ -142,7 +133,7 @@ func (s *lessonService) Update(id uint, input UpdateLessonInput, requestID strin
 		"lesson_id": id,
 	})
 
-	response := s.toLessonResponse(lesson, true)
+	response := s.toResponse(lesson, true)
 	return &response, nil
 }
 
@@ -154,9 +145,6 @@ func (s *lessonService) Delete(id uint, requestID string, userID uint) error {
 	_, err := s.repo.FindByID(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.LogWarning("lessons", "delete", "Lesson not found", requestID, userID, map[string]any{
-				"lesson_id": id,
-			})
 			return errors.New("lesson not found")
 		}
 		return err
@@ -173,10 +161,10 @@ func (s *lessonService) Delete(id uint, requestID string, userID uint) error {
 	return nil
 }
 
-func (s *lessonService) toLessonResponse(lesson entities.ClassLesson, includeResources bool) LessonResponse {
+func (s *lessonService) toResponse(lesson entities.Lesson, includeResources bool) LessonResponse {
 	response := LessonResponse{
 		ID:            lesson.ID,
-		SubjectID:     lesson.SubjectID,
+		ClassID:       lesson.ClassID,
 		Title:         lesson.Title,
 		Description:   lesson.Description,
 		LessonOrder:   lesson.LessonOrder,
@@ -185,8 +173,8 @@ func (s *lessonService) toLessonResponse(lesson entities.ClassLesson, includeRes
 		ResourceCount: len(lesson.Resources),
 	}
 
-	if lesson.Subject.ID != 0 {
-		response.SubjectName = lesson.Subject.Name
+	if lesson.Class.ID != 0 {
+		response.ClassName = lesson.Class.Name
 	}
 
 	if includeResources && len(lesson.Resources) > 0 {

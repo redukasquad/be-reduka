@@ -16,6 +16,7 @@ type handler struct {
 
 type Handler interface {
 	GetAllCoursesHandler(c *gin.Context)
+	GetMyCoursesTutorHandler(c *gin.Context)
 	GetCourseByIDHandler(c *gin.Context)
 	GetCoursesByProgramIDHandler(c *gin.Context)
 	CreateCourseHandler(c *gin.Context)
@@ -40,16 +41,35 @@ func getUserID(c *gin.Context) uint {
 	if !exists {
 		return 0
 	}
-	
+
 	switch id := userID.(type) {
-    case int:
-        return uint(id)
-    case uint:
-        return id
-    case float64:
-        return uint(id)
-    }
-    return 0
+	case int:
+		return uint(id)
+	case uint:
+		return id
+	case float64:
+		return uint(id)
+	}
+	return 0
+}
+
+func (h *handler) GetMyCoursesTutorHandler(c *gin.Context) {
+	requestID := getRequestID(c)
+	userID := getUserID(c)
+
+	var params dto.ListQueryParams
+	if err := c.ShouldBindQuery(&params); err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid query params", err.Error(), nil))
+		return
+	}
+
+	courses, err := h.service.GetByCreator(userID, params, requestID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to fetch courses", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Courses retrieved successfully", courses))
 }
 
 func (h *handler) GetAllCoursesHandler(c *gin.Context) {

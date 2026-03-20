@@ -24,6 +24,7 @@ type Handler interface {
 	GetRegistrationsByTryOutHandler(c *gin.Context)
 	ApprovePaymentHandler(c *gin.Context)
 	RejectPaymentHandler(c *gin.Context)
+	DeleteRegistrationHandler(c *gin.Context)
 }
 
 func NewHandler(service Service) Handler {
@@ -187,7 +188,7 @@ func (h *handler) ApprovePaymentHandler(c *gin.Context) {
 		switch err.Error() {
 		case "registration not found":
 			c.JSON(http.StatusNotFound, utils.BuildResponseFailed("Registration not found", err.Error(), nil))
-		case "payment is already approved", "no payment proof uploaded yet":
+		case "payment is already approved":
 			c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid operation", err.Error(), nil))
 		default:
 			c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to approve payment", err.Error(), nil))
@@ -229,4 +230,26 @@ func (h *handler) RejectPaymentHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Payment rejected", registration))
+}
+
+func (h *handler) DeleteRegistrationHandler(c *gin.Context) {
+	requestID := getRequestID(c)
+	registrationIDStr := c.Param("id")
+
+	registrationID, err := strconv.ParseUint(registrationIDStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid ID", "ID must be a valid number", nil))
+		return
+	}
+
+	if err := h.service.DeleteRegistration(uint(registrationID), requestID); err != nil {
+		if err.Error() == "registration not found" {
+			c.JSON(http.StatusNotFound, utils.BuildResponseFailed("Registration not found", err.Error(), nil))
+			return
+		}
+		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to delete registration", err.Error(), nil))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.BuildResponseSuccess("Registration deleted successfully", nil))
 }

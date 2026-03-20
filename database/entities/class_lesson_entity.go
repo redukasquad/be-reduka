@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type ClassLesson struct {
+type Lesson struct {
 	gorm.Model
 
-	SubjectID       uint `json:"subjectId" form:"subjectId" binding:"required"`
+	ClassID         uint `json:"classId" form:"classId" binding:"required"`
 	CreatedByUserID uint `json:"createdByUserId" form:"createdByUserId" binding:"required"`
 
 	Title       string `json:"title" form:"title" binding:"required"`
@@ -19,7 +19,7 @@ type ClassLesson struct {
 	StartTime *time.Time `json:"startTime,omitempty" form:"startTime"`
 	EndTime   *time.Time `json:"endTime,omitempty" form:"endTime"`
 
-	Subject   ClassSubject          `json:"subject,omitempty" gorm:"foreignKey:SubjectID"`
-	Creator   User                  `json:"creator,omitempty" gorm:"foreignKey:CreatedByUserID"`
-	Resources []ClassLessonResource `json:"resources,omitempty" gorm:"foreignKey:ClassLessonID"`
+	Class     Class            `json:"class,omitempty" gorm:"foreignKey:ClassID"`
+	Creator   User             `json:"creator,omitempty" gorm:"foreignKey:CreatedByUserID"`
+	Resources []LessonResource `json:"resources,omitempty" gorm:"foreignKey:LessonID"`
 }

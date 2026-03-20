@@ -20,8 +20,8 @@ type UpdateLessonInput struct {
 
 type LessonResponse struct {
 	ID            uint               `json:"id"`
-	SubjectID     uint               `json:"subjectId"`
-	SubjectName   string             `json:"subjectName,omitempty"`
+	ClassID       uint               `json:"classId"`
+	ClassName     string             `json:"className,omitempty"`
 	Title         string             `json:"title"`
 	Description   string             `json:"description"`
 	LessonOrder   int                `json:"lessonOrder"`

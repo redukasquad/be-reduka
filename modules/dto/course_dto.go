@@ -1,8 +1,9 @@
 package dto
 
 import (
-	"github.com/redukasquad/be-reduka/database/entities"
 	"time"
+
+	"github.com/redukasquad/be-reduka/database/entities"
 )
 
 type CourseResponse struct {
@@ -15,10 +16,10 @@ type CourseResponse struct {
 	WhatsAppGroupLink string                 `json:"whatsAppGroupLink,omitempty"`
 	Program           *ProgramBriefResponse  `json:"program,omitempty"`
 	Creator           *CreatorResponse       `json:"creator,omitempty"`
-	Subjects          []SubjectBriefResponse `json:"subjects,omitempty"`
+	Classes           []SubjectBriefResponse `json:"classes,omitempty"`
 	CreatedAt         time.Time              `json:"createdAt"`
 	Image             string                 `json:"image,omitempty"`
-} 
+}
 
 func ToCourseResponse(course entities.Course) CourseResponse {
 	response := CourseResponse{
@@ -28,28 +29,27 @@ func ToCourseResponse(course entities.Course) CourseResponse {
 		StartDate:         course.StartDate,
 		EndDate:           course.EndDate,
 		IsFree:            course.IsFree,
-		Image:             course.Image, 
+		Image:             course.Image,
 		WhatsAppGroupLink: course.WhatsappGroupLink,
 		CreatedAt:         course.CreatedAt,
 	}
 
-	
 	// Map Program jika ada (ID != 0)
 	if course.Program.ID != 0 {
-			program := ToProgramBriefResponse(course.Program)
-			response.Program = &program
+		program := ToProgramBriefResponse(course.Program)
+		response.Program = &program
 	}
-	
+
 	// Map Creator jika ada
 	if course.Creator.ID != 0 {
-			creator := ToCreatorResponse(course.Creator)
-			response.Creator = &creator
+		creator := ToCreatorResponse(course.Creator)
+		response.Creator = &creator
 	}
-	
-	// Map Subjects
-	for _, subject := range course.Subjects {
-			response.Subjects = append(response.Subjects, ToSubjectBriefResponse(subject))
+
+	// Map Classes
+	for _, class := range course.Classes {
+		response.Classes = append(response.Classes, ToSubjectBriefResponse(class))
 	}
-	
+
 	return response
 }

@@ -15,6 +15,7 @@ type courseService struct {
 
 type Service interface {
 	GetAll(params dto.ListQueryParams, requestID string) (*dto.PaginatedResponse[dto.CourseResponse], error)
+	GetByCreator(creatorID uint, params dto.ListQueryParams, requestID string) (*dto.PaginatedResponse[dto.CourseResponse], error)
 	GetByID(id uint, requestID string) (*dto.CourseResponse, error)
 	GetByProgramID(programID uint, requestID string) ([]dto.CourseResponse, error)
 	Create(input CreateCourseInput, requestID string, userID uint) (*dto.CourseResponse, error)
@@ -24,6 +25,28 @@ type Service interface {
 
 func NewService(repo Repository) Service {
 	return &courseService{repo: repo}
+}
+
+func (s *courseService) GetByCreator(creatorID uint, params dto.ListQueryParams, requestID string) (*dto.PaginatedResponse[dto.CourseResponse], error) {
+	params.SetDefaults()
+
+	courses, err := s.repo.FindByCreatorPaginated(creatorID, params.GetOffset(), params.PerPage, params.Q)
+	if err != nil {
+		return nil, err
+	}
+
+	total, err := s.repo.CountByCreator(creatorID, params.Q)
+	if err != nil {
+		return nil, err
+	}
+
+	var responses []dto.CourseResponse
+	for _, c := range courses {
+		responses = append(responses, dto.ToCourseResponse(c))
+	}
+
+	result := dto.NewPaginatedResponse(responses, params.Page, params.PerPage, total)
+	return &result, nil
 }
 
 func (s *courseService) GetAll(params dto.ListQueryParams, requestID string) (*dto.PaginatedResponse[dto.CourseResponse], error) {
@@ -138,7 +161,7 @@ func (s *courseService) Create(input CreateCourseInput, requestID string, userID
 		EndDate:           input.EndDate,
 		IsFree:            input.IsFree,
 		WhatsappGroupLink: input.WhatsappGroupLink,
-		Image: input.Image,
+		Image:             input.Image,
 	}
 
 	if err := s.repo.Create(course); err != nil {

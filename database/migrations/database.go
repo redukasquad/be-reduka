@@ -45,8 +45,9 @@ func ConnectDatabase() {
 		&entities.RegistrationAnswer{},
 
 		// ===== CLASS & LESSON =====
-		&entities.ClassSubject{},
-		&entities.ClassLesson{},
+		&entities.Class{},
+		&entities.Lesson{},
+		&entities.LessonResource{},
 
 		// ===== TRYOUT =====
 		&entities.Subtest{},

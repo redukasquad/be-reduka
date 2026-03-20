@@ -10,10 +10,10 @@ func LessonRouter(router *gin.RouterGroup, requireAuth gin.HandlerFunc, requireA
 	lessonService := NewService(lessonRepo)
 	lessonHandler := NewHandler(lessonService)
 
-	subjectLessons := router.Group("/subjects/:id")
+	classLessons := router.Group("/classes/:id")
 	{
-		subjectLessons.GET("/lessons", lessonHandler.GetLessonsBySubjectHandler)
-		subjectLessons.POST("/lessons", requireAuth, requireAdminOrTutor, lessonHandler.CreateLessonHandler)
+		classLessons.GET("/lessons", lessonHandler.GetLessonsByClassHandler)
+		classLessons.POST("/lessons", requireAuth, requireAdminOrTutor, lessonHandler.CreateLessonHandler)
 	}
 
 	lessons := router.Group("/lessons")

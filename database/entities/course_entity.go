@@ -18,11 +18,11 @@ type Course struct {
 	EndDate           time.Time `json:"endDate" form:"endDate" binding:"required"`
 	IsFree            bool      `json:"isFree" form:"isFree" gorm:"default:false"`
 	WhatsappGroupLink string    `json:"whatsappGroupLink" form:"whatsappGroupLink"`
-	Image string `json:"image" form:"image" gorm:"type:text"`
+	Image             string    `json:"image" form:"image" gorm:"type:text"`
 
-	// relations
+	// relations — Program has many Courses, Course has many Classes
 	Program   Program                `json:"program,omitempty"`
-	Subjects  []ClassSubject         `json:"subjects,omitempty" gorm:"foreignKey:CourseID"`
+	Classes   []Class                `json:"classes,omitempty" gorm:"foreignKey:CourseID"`
 	Creator   User                   `json:"creator,omitempty" gorm:"foreignKey:CreatedByUserID"`
 	Questions []RegistrationQuestion `gorm:"foreignKey:CourseID"`
 }

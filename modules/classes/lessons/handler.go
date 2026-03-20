@@ -14,7 +14,7 @@ type handler struct {
 }
 
 type Handler interface {
-	GetLessonsBySubjectHandler(c *gin.Context)
+	GetLessonsByClassHandler(c *gin.Context)
 	GetLessonByIDHandler(c *gin.Context)
 	CreateLessonHandler(c *gin.Context)
 	UpdateLessonHandler(c *gin.Context)
@@ -47,17 +47,17 @@ func getUserID(c *gin.Context) uint {
 	return 0
 }
 
-func (h *handler) GetLessonsBySubjectHandler(c *gin.Context) {
+func (h *handler) GetLessonsByClassHandler(c *gin.Context) {
 	requestID := getRequestID(c)
-	subjectIDStr := c.Param("id")
+	classIDStr := c.Param("id")
 
-	subjectID, err := strconv.ParseUint(subjectIDStr, 10, 32)
+	classID, err := strconv.ParseUint(classIDStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Subject ID", "Subject ID must be a valid number", nil))
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Class ID", "Class ID must be a valid number", nil))
 		return
 	}
 
-	lessons, err := h.service.GetBySubjectID(uint(subjectID), requestID)
+	lessons, err := h.service.GetByClassID(uint(classID), requestID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to fetch lessons", err.Error(), nil))
 		return
@@ -92,11 +92,11 @@ func (h *handler) GetLessonByIDHandler(c *gin.Context) {
 func (h *handler) CreateLessonHandler(c *gin.Context) {
 	requestID := getRequestID(c)
 	userID := getUserID(c)
-	subjectIDStr := c.Param("id")
+	classIDStr := c.Param("id")
 
-	subjectID, err := strconv.ParseUint(subjectIDStr, 10, 32)
+	classID, err := strconv.ParseUint(classIDStr, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Subject ID", "Subject ID must be a valid number", nil))
+		c.JSON(http.StatusBadRequest, utils.BuildResponseFailed("Invalid Class ID", "Class ID must be a valid number", nil))
 		return
 	}
 
@@ -106,7 +106,7 @@ func (h *handler) CreateLessonHandler(c *gin.Context) {
 		return
 	}
 
-	lesson, err := h.service.Create(uint(subjectID), input, requestID, userID)
+	lesson, err := h.service.Create(uint(classID), input, requestID, userID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to create lesson", err.Error(), nil))
 		return

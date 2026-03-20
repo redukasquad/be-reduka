@@ -25,6 +25,7 @@ type Service interface {
 	GetRegistrationsByTryOut(tryOutID uint, requestID string) ([]RegistrationResponse, error)
 	ApprovePayment(registrationID uint, adminUserID uint, requestID string) (*RegistrationResponse, error)
 	RejectPayment(registrationID uint, input ApprovePaymentInput, adminUserID uint, requestID string) (*RegistrationResponse, error)
+	DeleteRegistration(registrationID uint, requestID string) error
 }
 
 func NewService(repo Repository) Service {
@@ -238,10 +239,6 @@ func (s *registrationService) ApprovePayment(registrationID uint, adminUserID ui
 		return nil, errors.New("payment is already approved")
 	}
 
-	if registration.PaymentProofURL == "" {
-		return nil, errors.New("no payment proof uploaded yet")
-	}
-
 	now := time.Now()
 	registration.PaymentStatus = entities.PaymentStatusApproved
 	registration.ApprovedByUserID = &adminUserID
@@ -306,4 +303,28 @@ func (s *registrationService) RejectPayment(registrationID uint, input ApprovePa
 
 	response := ToRegistrationResponse(updatedReg)
 	return &response, nil
+}
+
+func (s *registrationService) DeleteRegistration(registrationID uint, requestID string) error {
+	utils.LogInfo("registrations", "delete", "Admin deleting registration", requestID, 0, map[string]any{
+		"registration_id": registrationID,
+	})
+
+	_, err := s.repo.FindByID(registrationID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("registration not found")
+		}
+		return err
+	}
+
+	if err := s.repo.Delete(registrationID); err != nil {
+		utils.LogError("registrations", "delete", "Failed to delete registration: "+err.Error(), requestID, 0, nil)
+		return err
+	}
+
+	utils.LogSuccess("registrations", "delete", "Registration deleted successfully", requestID, 0, map[string]any{
+		"registration_id": registrationID,
+	})
+	return nil
 }

@@ -8,7 +8,7 @@ type SubjectBriefResponse struct {
 	Description string `json:"description,omitempty"`
 }
 
-func ToSubjectBriefResponse(subject entities.ClassSubject) SubjectBriefResponse {
+func ToSubjectBriefResponse(subject entities.Class) SubjectBriefResponse {
 	return SubjectBriefResponse{
 		ID:          subject.ID,
 		Name:        subject.Name,
