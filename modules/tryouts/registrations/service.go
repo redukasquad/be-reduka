@@ -59,16 +59,37 @@ func (s *registrationService) Register(tryOutID uint, userID uint, requestID str
 		return nil, errors.New("registration period has ended")
 	}
 
-	// Check if already registered
-	_, err = s.repo.FindByUserAndTryOut(userID, tryOutID)
-	if err == nil {
-		return nil, errors.New("you are already registered for this try out")
-	}
-
 	// Determine initial payment status
 	paymentStatus := entities.PaymentStatusPending
 	if tryOut.IsFree {
 		paymentStatus = entities.PaymentStatusApproved
+	}
+
+	// Check if already registered (including soft-deleted)
+	existing, err := s.repo.FindByUserAndTryOutUnscoped(userID, tryOutID)
+	if err == nil {
+		// Record exists (active or soft-deleted)
+		if existing.DeletedAt.Valid {
+			// Was soft-deleted — restore it and reset status
+			if err := s.repo.Restore(existing.ID); err != nil {
+				return nil, err
+			}
+			existing.DeletedAt.Valid = false
+			existing.PaymentStatus = paymentStatus
+			existing.PaymentProofURL = ""
+			existing.RejectionReason = ""
+			existing.RegisteredAt = now
+			if err := s.repo.Update(&existing); err != nil {
+				return nil, err
+			}
+			createdReg, err := s.repo.FindByID(existing.ID)
+			if err != nil {
+				return nil, err
+			}
+			response := ToRegistrationResponse(createdReg)
+			return &response, nil
+		}
+		return nil, errors.New("you are already registered for this try out")
 	}
 
 	registration := &entities.TryOutRegistration{

@@ -13,10 +13,12 @@ type Repository interface {
 	// Registrations
 	FindByID(id uint) (entities.TryOutRegistration, error)
 	FindByUserAndTryOut(userID, tryOutID uint) (entities.TryOutRegistration, error)
+	FindByUserAndTryOutUnscoped(userID, tryOutID uint) (entities.TryOutRegistration, error)
 	FindByUserID(userID uint) ([]entities.TryOutRegistration, error)
 	FindPendingPayments() ([]entities.TryOutRegistration, error)
 	FindByTryOutID(tryOutID uint) ([]entities.TryOutRegistration, error)
 	Create(registration *entities.TryOutRegistration) error
+	Restore(id uint) error
 	Update(registration *entities.TryOutRegistration) error
 	Delete(id uint) error
 
@@ -49,6 +51,13 @@ func (r *repository) FindByUserAndTryOut(userID, tryOutID uint) (entities.TryOut
 		Preload("User").
 		Preload("ApprovedBy").
 		Preload("Attempt").
+		First(&registration).Error
+	return registration, err
+}
+
+func (r *repository) FindByUserAndTryOutUnscoped(userID, tryOutID uint) (entities.TryOutRegistration, error) {
+	var registration entities.TryOutRegistration
+	err := r.db.Unscoped().Where("user_id = ? AND try_out_package_id = ?", userID, tryOutID).
 		First(&registration).Error
 	return registration, err
 }
@@ -89,6 +98,10 @@ func (r *repository) FindByTryOutID(tryOutID uint) ([]entities.TryOutRegistratio
 
 func (r *repository) Create(registration *entities.TryOutRegistration) error {
 	return r.db.Create(registration).Error
+}
+
+func (r *repository) Restore(id uint) error {
+	return r.db.Unscoped().Model(&entities.TryOutRegistration{}).Where("id = ?", id).Update("deleted_at", nil).Error
 }
 
 func (r *repository) Update(registration *entities.TryOutRegistration) error {

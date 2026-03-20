@@ -3,6 +3,7 @@ package registrations
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -81,6 +82,11 @@ func (h *handler) RegisterHandler(c *gin.Context) {
 		case "you are already registered for this try out":
 			c.JSON(http.StatusConflict, utils.BuildResponseFailed("Already registered", err.Error(), nil))
 		default:
+			// Catch DB-level duplicate key as conflict too
+			if strings.Contains(err.Error(), "Duplicate entry") && strings.Contains(err.Error(), "idx_user_tryout") {
+				c.JSON(http.StatusConflict, utils.BuildResponseFailed("Already registered", "you are already registered for this try out", nil))
+				return
+			}
 			c.JSON(http.StatusInternalServerError, utils.BuildResponseFailed("Failed to register", err.Error(), nil))
 		}
 		return
