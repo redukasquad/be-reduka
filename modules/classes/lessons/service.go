@@ -37,7 +37,7 @@ func (s *lessonService) GetByClassID(classID uint, requestID string) ([]LessonRe
 
 	var responses []LessonResponse
 	for _, lesson := range lessons {
-		responses = append(responses, s.toResponse(lesson, false))
+		responses = append(responses, s.toResponse(lesson, true))
 	}
 
 	utils.LogSuccess("lessons", "get_by_class", "Successfully fetched lessons", requestID, 0, map[string]any{
