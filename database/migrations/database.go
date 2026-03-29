@@ -13,14 +13,14 @@ import (
 var DB *gorm.DB
 
 func ConnectDatabase() {
-	dbHost := os.Getenv("DB_HOST")
-	dbUser := os.Getenv("DB_USER")
-	dbPass := os.Getenv("DB_PASS")
-	dbName := os.Getenv("DB_NAME")
-	dbPort := os.Getenv("DB_PORT")
-
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Jakarta",
-		dbHost, dbUser, dbPass, dbName, dbPort)
+	dsn := fmt.Sprintf(
+  "host=%s user=%s password=%s dbname=%s port=%s sslmode=require",
+  os.Getenv("DB_HOST"),
+  os.Getenv("DB_USER"),
+  os.Getenv("DB_PASS"),
+  os.Getenv("DB_NAME"),
+  os.Getenv("DB_PORT"),
+)
 
 	var err error
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
