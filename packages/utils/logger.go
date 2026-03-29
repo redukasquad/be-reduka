@@ -39,6 +39,17 @@ func openLogFile(path string) *os.File {
 }
 
 func InitLogger() {
+	if os.Getenv("APP_ENV") == "production" {
+		handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+			Level: slog.LevelInfo,
+		})
+		Log = slog.New(handler)
+		ErrorLog = slog.New(handler)
+		Important = slog.New(handler)
+		Log.Info("Logger initialized (serverless mode - stdout only)")
+		return
+	}
+
 	_ = os.MkdirAll("logs", 0755)
 
 	// files

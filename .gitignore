@@ -5,3 +5,5 @@ main.exe
 api.exe
 logs
 *.log
+tmp/
+.vercel/
