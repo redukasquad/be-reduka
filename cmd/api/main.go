@@ -45,7 +45,11 @@ func main() {
 		}
 	}
 
-	migrations.ConnectDatabase()
+	if os.Getenv("APP_ENV") == "production" {
+		migrations.ConnectDatabaseOnly()
+	} else {
+		migrations.ConnectDatabase()
+	}
 
 	utils.InitLogger()
 	r := gin.Default()
@@ -74,7 +78,10 @@ func main() {
 		uploads.UploadRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutorOrUser())
 	}
 
-	port := os.Getenv("GOLANG_PORT")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = os.Getenv("GOLANG_PORT")
+	}
 	if port == "" {
 		port = "8888"
 	}
