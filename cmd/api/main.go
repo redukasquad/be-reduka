@@ -1,14 +1,14 @@
-package main
+package api
 
 import (
 	"log"
 	"os"
 	"strings"
 	"time"
+	"net/http"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 	"github.com/redukasquad/be-reduka/database/migrations"
 	"github.com/redukasquad/be-reduka/middleware"
 	"github.com/redukasquad/be-reduka/modules/auth"
@@ -23,13 +23,15 @@ import (
 	"github.com/redukasquad/be-reduka/packages/utils"
 )
 
+var router *gin.Engine
+
 func getAllowedOrigins() []string {
 	origins := []string{"http://localhost:3000", "http://localhost:5173"}
 
 	if frontendURL := os.Getenv("FRONTEND_URL"); frontendURL != "" {
 		for _, url := range strings.Split(frontendURL, ",") {
 			url = strings.TrimSpace(url)
-			if url != "" && url != "http://localhost:3000" && url != "http://localhost:5173" {
+			if url != "" {
 				origins = append(origins, url)
 			}
 		}
@@ -38,19 +40,13 @@ func getAllowedOrigins() []string {
 	return origins
 }
 
-func main() {
-	if os.Getenv("APP_ENV") != "production" {
-		if err := godotenv.Load(); err != nil {
-			log.Println("No .env file found")
-		}
-	}
-
+func init() {
+	utils.InitLogger()
 	migrations.ConnectDatabase()
 
-	utils.InitLogger()
-	r := gin.Default()
+	router = gin.Default()
 
-	r.Use(cors.New(cors.Config{
+	router.Use(cors.New(cors.Config{
 		AllowOrigins:     getAllowedOrigins(),
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
@@ -59,7 +55,7 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	api := r.Group("/api")
+	api := router.Group("/api")
 	v1 := api.Group("/v1")
 	{
 		health.HealthRouter(v1)
@@ -74,13 +70,9 @@ func main() {
 		uploads.UploadRouter(v1, middleware.RequireAuth(), middleware.RequireAdminOrTutorOrUser())
 	}
 
-	port := os.Getenv("GOLANG_PORT")
-	if port == "" {
-		port = "8888"
-	}
+	log.Println("Router initialized successfully")
+}
 
-	log.Printf("Server starting on port %s", port)
-	if err := r.Run(":" + port); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
+func Handler(w http.ResponseWriter, r *http.Request) {
+	router.ServeHTTP(w, r)
 }
