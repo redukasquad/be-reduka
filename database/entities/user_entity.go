@@ -14,12 +14,12 @@ type User struct {
 	NoTelp       string `json:"noTelp" form:"noTelp"`
 	JenisKelamin *bool  `json:"jenisKelamin" form:"jenisKelamin"`
 
-	Kelas *string `json:"kelas" form:"kelas" binding:"omitempty,oneof='Kelas 10' 'Kelas 11' 'Kelas 12' 'Gapyer (Alumni)'" gorm:"type:enum('Kelas 10','Kelas 11','Kelas 12','Gapyer (Alumni)')"`
+	Kelas *string `json:"kelas" form:"kelas" binding:"omitempty,oneof='Kelas 10' 'Kelas 11' 'Kelas 12' 'Gapyer (Alumni)'" gorm:"type:varchar(20)"`
 
-	Role *string `json:"role" gorm:"type:enum('STUDENT','ADMIN','TUTOR');default:'STUDENT'"`
+	Role *string `json:"role" gorm:"type:varchar(10);default:'STUDENT'"`
 
 	// AuthProvider indicates how the user registered (PASSWORD or GOOGLE)
-	AuthProvider string `json:"authProvider" gorm:"type:enum('PASSWORD','GOOGLE');default:'PASSWORD'"`
+	AuthProvider string `json:"authProvider" gorm:"type:varchar(10);default:'PASSWORD'"`
 
 	ProfileImage             string     `json:"profileImage" form:"profileImage"`
 	IsVerified               bool       `json:"isVerified" gorm:"default:false"`

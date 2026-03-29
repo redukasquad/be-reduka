@@ -7,7 +7,7 @@ type LessonResource struct {
 
 	LessonID uint `json:"lessonId"`
 
-	Type  string `json:"type" binding:"required,oneof=video document link zoom recording" gorm:"type:enum('video','document','link','zoom','recording')"`
+	Type  string `json:"type" binding:"required,oneof=video document link zoom recording" gorm:"type:varchar(15)"`
 	Title string `json:"title"`
 	URL   string `json:"url" binding:"required"`
 
