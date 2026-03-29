@@ -67,12 +67,9 @@ func (s *authService) Register(input RegisterInput) (entities.User, error) {
 	}
 
 	emailBody := "Your verification code is: " + code
-	go func() {
-		err := utils.SendEmail(user.Email, "Email Verification", emailBody)
-		if err != nil {
-			log.Println("[EMAIL] FAILED:", err)
-		}
-	}()
+	if err := utils.SendEmail(user.Email, "Email Verification", emailBody); err != nil {
+		log.Println("[EMAIL] FAILED:", err)
+	}
 
 	return user, nil
 }
@@ -128,7 +125,9 @@ func (s *authService) ResendVerificationCode(email string) error {
 		<p>Your verification code is: <strong>` + code + `</strong></p>
 		<p>This code will expire in 15 minutes.</p>
 	`
-	go utils.SendEmail(user.Email, "Email Verification - Reduka", emailBody)
+	if err := utils.SendEmail(user.Email, "Email Verification - Reduka", emailBody); err != nil {
+		log.Println("[EMAIL] FAILED:", err)
+	}
 
 	return nil
 }
@@ -190,7 +189,9 @@ func (s *authService) ForgotPassword(input ForgotPasswordInput) error {
 	}
 
 	emailBody := "Your reset password code is: " + token
-	go utils.SendEmail(user.Email, "Reset Password", emailBody)
+	if err := utils.SendEmail(user.Email, "Reset Password", emailBody); err != nil {
+		log.Println("[EMAIL] FAILED:", err)
+	}
 
 	return nil
 }
