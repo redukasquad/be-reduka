@@ -43,7 +43,7 @@ func getAllowedOrigins() []string {
 func init() {
 	gin.SetMode(gin.ReleaseMode)
 
-	migrations.ConnectDatabase()
+	migrations.ConnectDatabaseOnly()
 
 	utils.InitLogger()
 

@@ -81,6 +81,25 @@ func ConnectDatabase() {
 	log.Println("Seeders completed successfully!")
 }
 
+func ConnectDatabaseOnly() {
+	dbHost := os.Getenv("DB_HOST")
+	dbUser := os.Getenv("DB_USER")
+	dbPass := os.Getenv("DB_PASS")
+	dbName := os.Getenv("DB_NAME")
+	dbPort := os.Getenv("DB_PORT")
+
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=require TimeZone=Asia/Jakarta",
+		dbHost, dbUser, dbPass, dbName, dbPort)
+
+	var err error
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
+
+	log.Println("Database connected successfully!")
+}
+
 func GetDB() *gorm.DB {
 	return DB
 }
