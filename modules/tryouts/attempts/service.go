@@ -2,6 +2,7 @@ package attempts
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/redukasquad/be-reduka/database/entities"
@@ -158,11 +159,12 @@ func (s *attemptService) GetCurrentState(attemptID uint, userID uint, requestID 
 	subtests, _ := s.repo.FindAllSubtests()
 	for _, subtest := range subtests {
 		progress := SubtestProgressResponse{
-			SubtestID:   subtest.ID,
-			SubtestCode: subtest.Code,
-			SubtestName: subtest.Name,
-			Status:      "not_started",
-			TotalCount:  subtest.QuestionCount,
+			SubtestID:        subtest.ID,
+			SubtestCode:      subtest.Code,
+			SubtestName:      subtest.Name,
+			Status:           "not_started",
+			TotalCount:       subtest.QuestionCount,
+			TimeLimitSeconds: subtest.TimeLimitSeconds,
 		}
 
 		result, err := s.repo.FindSubtestResultByAttemptAndSubtest(attemptID, subtest.ID)
@@ -220,6 +222,8 @@ func (s *attemptService) StartSubtest(attemptID, subtestID uint, userID uint, re
 		"subtest_id": subtestID,
 	})
 
+	fmt.Println("attempt", attemptID, "subtestID", subtestID)
+
 	attempt, err := s.repo.FindAttemptByID(attemptID)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -227,6 +231,8 @@ func (s *attemptService) StartSubtest(attemptID, subtestID uint, userID uint, re
 		}
 		return nil, err
 	}
+
+	fmt.Println("attempt:", attempt)
 
 	// Check ownership
 	if attempt.Registration.UserID != userID {
@@ -246,6 +252,8 @@ func (s *attemptService) StartSubtest(attemptID, subtestID uint, userID uint, re
 		}
 		return nil, err
 	}
+
+	fmt.Println("subtest:", subtest)
 
 	// Check if subtest result exists, create if not
 	result, err := s.repo.FindSubtestResultByAttemptAndSubtest(attemptID, subtestID)
@@ -441,6 +449,25 @@ func (s *attemptService) SubmitSubtest(attemptID, subtestID uint, input SubmitSu
 
 	if err := s.repo.UpdateSubtestResult(&result); err != nil {
 		return nil, err
+	}
+
+	// Advance currentSubtestID to next unfinished subtest (or clear if all done)
+	allSubtests, err := s.repo.FindAllSubtests()
+	if err == nil {
+		var nextSubtestID *uint
+		for _, sub := range allSubtests {
+			if sub.ID == subtestID {
+				continue
+			}
+			r, err := s.repo.FindSubtestResultByAttemptAndSubtest(attemptID, sub.ID)
+			if errors.Is(err, gorm.ErrRecordNotFound) || (err == nil && r.FinishedAt == nil) {
+				id := sub.ID
+				nextSubtestID = &id
+				break
+			}
+		}
+		attempt.CurrentSubtestID = nextSubtestID
+		s.repo.UpdateAttempt(&attempt)
 	}
 
 	utils.LogSuccess("attempts", "submit_subtest", "Subtest submitted", requestID, userID, map[string]any{

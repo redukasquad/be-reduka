@@ -48,12 +48,13 @@ type SubtestResultResponse struct {
 
 // SubtestProgressResponse shows progress during exam
 type SubtestProgressResponse struct {
-	SubtestID     uint   `json:"subtestId"`
-	SubtestCode   string `json:"subtestCode"`
-	SubtestName   string `json:"subtestName"`
-	Status        string `json:"status"` // not_started, in_progress, completed
-	AnsweredCount int    `json:"answeredCount"`
-	TotalCount    int    `json:"totalCount"`
+	SubtestID        uint   `json:"subtestId"`
+	SubtestCode      string `json:"subtestCode"`
+	SubtestName      string `json:"subtestName"`
+	Status           string `json:"status"` // not_started, in_progress, completed
+	AnsweredCount    int    `json:"answeredCount"`
+	TotalCount       int    `json:"totalCount"`
+	TimeLimitSeconds int    `json:"timeLimitSeconds"`
 }
 
 // SubtestBriefResponse is a minimal subtest info

@@ -97,7 +97,7 @@ func (r *repository) CreateAttempt(attempt *entities.TryOutAttempt) error {
 }
 
 func (r *repository) UpdateAttempt(attempt *entities.TryOutAttempt) error {
-	return r.db.Save(attempt).Error
+	return r.db.Model(attempt).Omit("CurrentSubtest", "Registration", "SubtestResults", "Answers").Save(attempt).Error
 }
 
 // ==========================================
