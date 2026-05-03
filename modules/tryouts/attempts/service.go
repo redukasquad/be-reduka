@@ -12,9 +12,10 @@ import (
 
 // Difficulty weights for scoring
 const (
-	WeightEasy   = 1.0
-	WeightMedium = 1.5
-	WeightHard   = 2.0
+	WeightEasy    = 1.0
+	WeightMedium  = 1.5
+	WeightHard    = 2.0
+	TotalSubtests = 7
 )
 
 type attemptService struct {
@@ -524,12 +525,8 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 		}
 	}
 
-	subtests, err := s.repo.FindAllSubtests()
-	if err != nil {
-    return nil, err
-	}
-	if len(subtests) > 0 {
-    totalScore /= float64(len(subtests))
+	if TotalSubtests > 0 {
+		totalScore /= float64(TotalSubtests)
 	}
 
 	now := time.Now()
