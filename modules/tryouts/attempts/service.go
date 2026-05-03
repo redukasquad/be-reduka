@@ -435,7 +435,7 @@ func (s *attemptService) SubmitSubtest(attemptID, subtestID uint, input SubmitSu
 
 	var finalScore float64
 	if maxRawScore > 0 {
-		finalScore = ((rawScore / maxRawScore) * subtest.MaxScore) / 7
+		finalScore = (rawScore / maxRawScore) * subtest.MaxScore
 	}
 
 	// Update subtest result
@@ -522,6 +522,14 @@ func (s *attemptService) FinishAttempt(attemptID uint, userID uint, requestID st
 		if r.FinalScore != nil {
 			totalScore += *r.FinalScore
 		}
+	}
+
+	subtests, err := s.repo.FindAllSubtests()
+	if err != nil {
+    return nil, err
+	}
+	if len(subtests) > 0 {
+    totalScore /= float64(len(subtests))
 	}
 
 	now := time.Now()
