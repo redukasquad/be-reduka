@@ -435,7 +435,7 @@ func (s *attemptService) SubmitSubtest(attemptID, subtestID uint, input SubmitSu
 
 	var finalScore float64
 	if maxRawScore > 0 {
-		finalScore = (rawScore / maxRawScore) * subtest.MaxScore
+		finalScore = ((rawScore / maxRawScore) * subtest.MaxScore) / 7
 	}
 
 	// Update subtest result
